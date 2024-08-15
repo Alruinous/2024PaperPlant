@@ -348,6 +348,7 @@ def get_submission(request):
 
             score=body['score'] 
 
+            print(submissionList)
 
             survey=Survey.objects.get(SurveyID=surveyID)
             if survey is None:
@@ -391,10 +392,9 @@ def get_submission(request):
                         ratingAnswer.delete()
 
             for submissionItem in submissionList:
+                print("TieZhu")
                 questionID=submissionItem["questionID"]     #问题ID
                 answer=submissionItem['value']        #用户填写的答案
-
-                print(answer)
 
                 #question = BaseQuestion.objects.get(QuestionID=questionID).select_subclasses()   #联合查询
 
@@ -423,6 +423,8 @@ def get_submission(request):
                     questionNewList.append(ratingQuestion_query.first())
                 
                 question=questionNewList[0]
+                
+                print("123154654")
                 print(question)
 
                 # print(question.CorrectAnswer)

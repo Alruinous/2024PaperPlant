@@ -1,7 +1,7 @@
-<!-- 问卷设计页面 -->
+<!-- 问卷填写页面 -->
 <template>
     
-    <navigation-bar style="position: fixed;"/>
+    <navigation-bar :message="type==3" style="position: fixed;"/>
     <div class="back">
 
       <div class="right" id="print">
@@ -122,7 +122,7 @@
         input:'',
         username:'',
         questionnaireId:0,
-        type:3,
+        type:0,
         questionCnt: 0,
         questionList: [],
         title:'问题标题',
