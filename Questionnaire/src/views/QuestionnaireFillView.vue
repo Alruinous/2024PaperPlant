@@ -3,7 +3,7 @@
     <button v-if="flag==2" v-print="printObj" ref="printButton">打印</button>
     <navigation-bar style="position: fixed;"/>
     <div class="back">
-      
+
       <div class="right" id="print">
         <div class="title">{{ title }}</div>
         <div>{{ description }}</div>
@@ -194,7 +194,8 @@
           if(status == 1 && !this.canSubmit()){
             return;
           }
-          var promise;
+          var promise;        
+
           if(status == 0){
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
@@ -315,10 +316,6 @@
       ElMessage,
      },
      mounted(){
-      this.addSingle();
-      this.addMultiple();
-      this.addFill();
-      this.addScore();
       if(this.type == 3){
         let totalSeconds = this.timeLimit * 60 - this.duration;
         const timeDisplay = document.getElementById('time');
@@ -352,18 +349,8 @@
       this.type = this.$route.query.questionnaireType;
       this.submissionId = parseInt(this.$route.query.submissionId);
       this.flag = this.$route.query.flag;
-
-      // console.log("start222");
-      // console.log(this.questionnaireId);
-      // console.log(this.submissionId);
-      if(this.flag == 2){
-        this.$nextTick(()=>{
-          this.$refs.printButton.click();   //强行触发打印
-          this.$router.push({path:'/userManage/filled'});
-          return;
-        })
-      }
-      if(this.$cookies.isKey('username')){
+      
+      if(this.$cookies.isKey('username') || this.flag == 2){
         const internalInstance = getCurrentInstance()
         const internalData = internalInstance.appContext.config.globalProperties
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
@@ -377,23 +364,12 @@
           this.questionList = result.questionList;
           this.duration = result.duration;
           this.description = result.description;
+          this.submissionId = result.submissionId;
 
-          // 保证只刷新一次
-          // 检查本地存储中是否有刷新标记
-          if (!localStorage.getItem('pageRefreshed')) {
-            // 如果没有刷新标记，刷新页面
-            localStorage.setItem('pageRefreshed', 'true');
+          if (location.href.indexOf("#reloaded") == -1) {
+            location.href = location.href + "#reloaded";
             window.location.reload();
           }
-
-          // this.submissionId = result.submissionId;
-          // console.log("questionList Answer")
-          // console.log(this.questionList[0].Answer)
-          // console.log(this.questionList[1].Answer)
-          // console.log(this.questionList[2].Answer)
-          // console.log(this.questionList[3].Answer)
-          // console.log(this.questionList[4].Answer)
-          // console.log(this.questionList[5].Answer)
 
           if(this.type == 2 && this.people == 0){
             this.warning("报名人数已满！")
@@ -406,12 +382,16 @@
         this.warning("请先登录！");
         this.$router.push({path:'/login',query:{questionnaireId:this.questionnaireId}});
       }
+
+      if(this.flag == 2){
+        this.$nextTick(()=>{
+          this.$refs.printButton.click();   //强行触发打印
+          this.$router.push({path:'/userManage/filled'});
+          return;
+        })
+      }
+      
      },
-     destroyed() {
-      // 在组件销毁时清除刷新标记
-      // 这样在用户下次访问页面时可以再次刷新
-      localStorage.removeItem('pageRefreshed');
-     }
    })
   </script>
   
