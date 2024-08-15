@@ -237,8 +237,9 @@ class GetStoreFillView(APIView):
                 submission=Submission.objects.create(Survey=survey,Respondent=user,Status="Unsubmitted",
                                                     Interval=0)
                 duration=0
+                submissionID=submission.SubmissionID
                 # newsubmissionID = submission.SubmissionID
-                return HttpResponse(content='Submission not existed', status=404) 
+                # return HttpResponse(content='Submission not existed', status=404) 
         
         #从问卷管理界面进入：
         else:

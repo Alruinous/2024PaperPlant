@@ -201,19 +201,12 @@
       },
 
       getFill(){
-        // console.log("getfill questionnaireid submissionID in normalAnswer")
-        // console.log(this.questionnaireId)
-        // console.log(this.submissionId)
         var promise = GetFillInNormalAnswer(this.username, this.questionnaireId, this.submissionId);
         promise.then((result)=>{
           this.questionListFill = result.questionList;
           this.title = result.Title;
           this.description = result.description;
           this.questionCnt = this.questionListFill.length;
-
-          console.log("start")
-          console.log(this.questionCnt)
-          console.log(this.questionListFill)
         })
         
       },
