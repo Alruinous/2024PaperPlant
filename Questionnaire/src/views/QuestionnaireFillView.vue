@@ -338,7 +338,6 @@
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise.then((result) => {
-          console.log("promise")
           this.title = result.Title;
           this.type = result.category;
           this.people = result.people;
@@ -361,39 +360,30 @@
             this.$router.push({path:'/userManage/filled'});
             return;
           }
+
+          if(this.type == 3){
+            let totalSeconds = this.timeLimit * 60 - this.duration;
+            this.intervalId = setInterval(() => {
+              totalSeconds--;
+              this.duration++;
+              const minutes = Math.floor(totalSeconds / 60);
+              const seconds = totalSeconds % 60;
+              document.getElementById("time").textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+              if (totalSeconds <= 0) {
+                this.warning("考试时间到！试卷回收");
+                clearInterval(this.intervalId);
+                this.postFill(1);
+              }
+              
+            },1000);
+          }
+
         })
       }
       else{
         this.warning("请先登录！");
         this.$router.push({path:'/login',query:{questionnaireId:this.questionnaireId}});
-      }
-
-
-
-
-      if(this.type == 3){
-        // 在 DOM 渲染后执行
-        this.$nextTick(() => {
-          let totalSeconds = this.timeLimit * 60 - this.duration;
-          const timeDisplay = document.getElementById("time");
-          if(timeDisplay){
-            console.log("+++++++");
-          }
-          this.intervalId = setInterval(() => {
-            totalSeconds--;
-            this.duration++;
-            const minutes = Math.floor(totalSeconds / 60);
-            const seconds = totalSeconds % 60;
-            timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-            if (totalSeconds <= 0) {
-              this.warning("考试时间到！试卷回收");
-              clearInterval(this.intervalId);
-              this.postFill(1);
-            }
-          },1000);
-        });
-
       }
 
      },
