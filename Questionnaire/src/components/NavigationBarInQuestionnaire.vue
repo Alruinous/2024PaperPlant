@@ -5,6 +5,7 @@
     import { useRouter } from 'vue-router';
     import { ArrowDown } from '@element-plus/icons-vue'
     import store from '../store';
+    import { defineProps } from 'vue';
 
     //导入cookies
     import { getCurrentInstance } from 'vue';
@@ -13,6 +14,11 @@
     const internalData = internalInstance.appContext.config.globalProperties;
 
     const router = useRouter();
+
+    //接受QuestionnaireFillView中传来的message，true为禁用返回，false为不禁用返回
+    const props = defineProps({
+        message: Boolean,
+    });
 
     const gotoLogin = () => {
         router.push('/login');
