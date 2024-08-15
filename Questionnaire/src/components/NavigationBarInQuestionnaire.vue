@@ -94,9 +94,13 @@
 
 <template>
     <el-header class = "navigationBar">
-        <div @mouseover="logoIn('logo')" @mouseout="logoOut('logo')" @click="gotoUserManage">
+        <div @mouseover="logoIn('logo')" @mouseout="logoOut('logo')"  v-if="props.message">
             <img id="logo" src="../assets/logo.png" alt="Element logo"/>
         </div>
+        <div @mouseover="logoIn('logo')" @mouseout="logoOut('logo')" @click="gotoUserManage" v-else>
+            <img id="logo" src="../assets/logo.png" alt="Element logo"/>
+        </div>
+
         <div class="title">
             <span>纸翼</span>传问
         </div>
