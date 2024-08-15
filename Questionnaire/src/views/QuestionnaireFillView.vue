@@ -181,32 +181,25 @@
             this.questionCnt++;
             this.questionList.push({"type":4,"isNecessary":true,"question":"请评分","Answer":ref(0)});
         },
-        //暂存/提交,如果status是0，那么是暂存，如果status是1.那么根据问卷类型判断是已批改还是已提交
+        //暂存/提交,如果status是0，那么是暂存，如果status是1.那么根据问卷类型判断是已批改还是已提交，如
         postFill(status){
 
           if(status == 1 && !this.canSubmit()){
             return;
           }
           var promise;   
-
-          // console.log("start print this.question1")
-          // console.log(this.question.length)
           
           let i = 0;
           for(i;i < this.questionList.length;i++){
             this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer});
-            // console.log("start print this.question2")
-            // console.log(this.question.length)
           }
-          // console.log(this.question)
 
           if(status == 0){
-            console.log("start print submissionId")
-            console.log(this.submissionId)
+            console.log(this.question);
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
           }
-          else if(status == 1 && this.type == 3){
+          else if((status == 1 && this.type == 3) || status == 3){
             
             let sum = 0,i = 0;
             for(i=0;i<this.questionList.length;i++){
@@ -271,6 +264,7 @@
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0, this.submissionId,this.username, 0);
             promise.then((result)=>{
               this.submissionId = result.submissionID;
+              console.log(this.submissionId);
             })
             this.$router.push({path:'/normalAnswer',query:{questionnaireID:this.questionnaireId, submissionID:this.submissionId}}); 
           }
@@ -323,17 +317,10 @@
       this.submissionId = parseInt(this.$route.query.submissionId);
       this.flag = this.$route.query.flag;
 
-      console.log("print mounted submissionId")
-      console.log(this.submissionId)
-
       if(this.flag == 2) {
         this.submissionId = -1; //GetStoreFill 只返回题干
       }
-    
-      // console.log("created")
-      // console.log(this.username)
-      // console.log(this.questionnaireId)
-      // console.log(this.submissionId)
+
       
       if(this.$cookies.isKey('username') || this.flag == 2){
         const internalInstance = getCurrentInstance()
@@ -341,6 +328,7 @@
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise.then((result) => {
+
           this.title = result.Title;
           this.type = result.category;
           this.people = result.people;
@@ -349,7 +337,6 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionID;
-          console.log(this.submissionId);
 
           if(this.flag == 2){
             this.$nextTick(()=>{
@@ -377,7 +364,7 @@
               if (totalSeconds <= 0) {
                 this.warning("考试时间到！试卷回收");
                 clearInterval(this.intervalId);
-                this.postFill(1);
+                this.postFill(3);
               }
               
             },1000);

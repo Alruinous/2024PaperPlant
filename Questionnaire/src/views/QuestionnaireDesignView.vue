@@ -119,6 +119,7 @@
             isNecessary：布尔类型，是否必填，初值true
             text:正在修改的题干填写内容
             score:此题分数
+            answer:答案
         -->
 
         <el-icon color="#c45656" style="position: absolute; left: 1%;font-size: 24px;" v-if="questionList[index-1].isNecessary==true"><StarFilled/>&ensp;</el-icon>
@@ -143,7 +144,7 @@
                       @blur="finishEditing(1,index-1,index2-1)" 
                       @keyup.enter="finishEditing(1,index-1,index2-1)"
                       />
-                      <span v-else @click="startEditing(1,index-1,index2-1)" >{{ questionList[index-1].optionList[index2-1].text }}</span>
+                      <span v-else @click="startEditing(1,index-1,index2-1)" :class="{ 'correct-answer': questionList[index-1].optionList[index2-1].isCorrect }">{{ questionList[index-1].optionList[index2-1].text }}</span>
                     </template>
                     <div>
                       <el-button size="small" color="#fef0f0" @click="addOption(index-1,index2-1)" text><el-icon><Plus/></el-icon></el-button>
@@ -252,9 +253,20 @@
             <el-option v-for="ind in questionList[index-1].optionList.length" :key="ind" :label="ind" :value="ind"/>
           </el-select>
           
-          &nbsp;
-          <!-- 设置本题分数 -->
-          <el-input-number v-if="type==3" v-model="questionList[index-1].score" :min="0" controls-position="right"/>
+          <div class="row"></div>
+
+          <div style="color:#797D7F"  v-if="type==3">
+            <!-- 设置本题分数 -->
+            题目分数：
+            <el-input-number v-model="questionList[index-1].score" :min="0" controls-position="right"/>
+          </div>
+
+          <div class="row"></div>
+
+          <div style="color:#797D7F" v-if="type==3 && questionList[index-1].type == 3">
+            正确答案：
+            <el-input style="width: 20%;" v-model="questionList[index-1].correctAnswer" :min="0" controls-position="right"/>
+          </div>
 
           <el-divider border-style="dashed"></el-divider>
         </div>
@@ -421,7 +433,7 @@ const router = useRouter();
     //选择题
     addOption(index,index2){
       this.questionList[index].optionCnt++;
-      this.questionList[index].optionList.splice(index2,0,{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false});
+      this.questionList[index].optionList.splice(index2+1,0,{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false});
       if(this.questionList[index].optionCnt==2){
           this.questionList[index].isDisabled = false;
       }
@@ -603,6 +615,9 @@ const router = useRouter();
             this.questionList[i].optionList[j].text = this.questionList[i].optionList[j].content;
             this.questionList[i].optionList[j].isEditing = false;
             }
+          }
+          else{
+            this.questionList[i].correctAnswer = "";
           }
         }
       })

@@ -237,8 +237,9 @@ class GetStoreFillView(APIView):
                 submission=Submission.objects.create(Survey=survey,Respondent=user,Status="Unsubmitted",
                                                     Interval=0)
                 duration=0
+                submissionID=submission.SubmissionID
                 # newsubmissionID = submission.SubmissionID
-                return HttpResponse(content='Submission not existed', status=404) 
+                # return HttpResponse(content='Submission not existed', status=404) 
         
         #从问卷管理界面进入：
         else:
@@ -332,29 +333,18 @@ class GetStoreFillView(APIView):
 
 #问卷填写界面：从前端接收用户的填写记录(POST)
 def get_submission(request):
-    print("lorian")
     if(request.method=='POST'):
-        print("lorian")
         try:
             body=json.loads(request.body)
-            print("lorian")
             surveyID=body['surveyID']    #问卷id
-            print("lorian")
             status=body['status']  #填写记录状态
-            print("lorian")
             submissionID=body['submissionID']   #填写记录ID
-            print(body['submissionID'])
-            print("lorian")
             username=body['username']     #填写者
-            print("lorian")
             submissionList=body['question']     #填写记录
             duration=body['duration']  
 
             score=body['score'] 
 
-            # print(status)
-            print("lorian")
-            print(submissionList)
 
             survey=Survey.objects.get(SurveyID=surveyID)
             if survey is None:
@@ -372,9 +362,7 @@ def get_submission(request):
             
             #已存在，删除填写记录的所有内容
             else:
-                # print("123")
                 submission=Submission.objects.get(SubmissionID=submissionID)
-                # print(submission)
                 if submission is None:
                     return HttpResponse(content='Submission not found',status=404)
                 submission.Score=score
@@ -383,7 +371,6 @@ def get_submission(request):
                 
                 #所有选择题的填写记录
                 ChoiceAnswer_query=ChoiceAnswer.objects.filter(Submission=submission)
-                # print(ChoiceAnswer_query)
                 if ChoiceAnswer_query.exists():
                     for choiceAnswer in ChoiceAnswer_query:
                         choiceAnswer.delete()
@@ -403,6 +390,9 @@ def get_submission(request):
             for submissionItem in submissionList:
                 questionID=submissionItem["questionID"]     #问题ID
                 answer=submissionItem['value']        #用户填写的答案
+
+                print(answer)
+
                 #question = BaseQuestion.objects.get(QuestionID=questionID).select_subclasses()   #联合查询
 
                 '''
@@ -434,8 +424,6 @@ def get_submission(request):
                 # print(question.CorrectAnswer)
                 if question is None:
                     return HttpResponse(content='Question not found',status=404)
-                
-                # print(question['Category'])
 
                 if question.Category==1:     #单选题：Answer为选项ID
                     if answer==-1: continue       #返回-1，代表用户没填该单选题
@@ -459,6 +447,7 @@ def get_submission(request):
                     blankAnswer.save()
                 
                 elif question.Category==4:      #评分题：answer为填写的内容
+                    print(answer)
                     ratingAnswer=RatingAnswer.objects.create(Question=question,Submission=submission,Rate=answer)
                     ratingAnswer.save()
                 
@@ -559,6 +548,8 @@ def save_qs_design(request):
                                              TotalScore=0,TimeLimit=timelimit,IsOrder=isOrder,QuotaLimit=people
                                             )
                 survey.QuotaLimit=people
+                print("TieZhu")
+                print(questionList)
             #已有该问卷的编辑记录
             else:
                 survey=Survey.objects.get(SurveyID=surveyID)
@@ -611,10 +602,13 @@ def save_qs_design(request):
                         jdex=jdex+1
                 
                 elif question["type"]==3:                          #填空
+                    print("TieZhu")
                     question=BlankQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
                                                               Score=question["score"],QuestionNumber=index,Category=question["type"],
                                                               CorrectAnswer=question["correctAnswer"])
+                    print("TieZhu")
                     question.save()
+                    print("TieZhu")
                 
                 else:                                           #评分题
                     question=RatingQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
