@@ -71,7 +71,7 @@
     const nowuser_username = ref();
     const photos = ref();
     const nowuserPhotonumber = ref(0);
-    console.log(nowuserPhotonumber.value);
+    // console.log(nowuserPhotonumber.value);
     // const photoUrl = ref("@/assets/photos/photo0.jpg");
     if($cookies.isKey('username')){
         nowuser_username.value = internalData.$cookies.get('username');

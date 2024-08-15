@@ -1,6 +1,6 @@
 <!-- 问卷设计页面 -->
 <template>
-    <button v-if="flag==2" v-print="printObj" ref="printButton">打印</button>
+    
     <navigation-bar style="position: fixed;"/>
     <div class="back">
 
@@ -108,7 +108,7 @@
       </div>
   
     </div>
-    
+    <button v-if="flag==2" v-print="printObj" ref="printButton">打印</button>
   </template>
   
   <script>
@@ -322,6 +322,15 @@
       this.type = this.$route.query.questionnaireType;
       this.submissionId = parseInt(this.$route.query.submissionId);
       this.flag = this.$route.query.flag;
+
+      if(this.flag == 2) {
+        this.submissionId = -1; //GetStoreFill 只返回题干
+      }
+    
+      console.log("created")
+      console.log(this.username)
+      console.log(this.questionnaireId)
+      console.log(this.submissionId)
       
       if(this.$cookies.isKey('username') || this.flag == 2){
         const internalInstance = getCurrentInstance()
@@ -329,6 +338,7 @@
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise.then((result) => {
+          console.log("promise")
           this.title = result.Title;
           this.type = result.category;
           this.people = result.people;
@@ -337,6 +347,14 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionId;
+
+          if(this.flag == 2){
+            this.$nextTick(()=>{
+              this.$refs.printButton.click();   //强行触发打印
+              this.$router.push({path:'/userManage/filled'});
+              return;
+            })
+          }
 
           if(this.type == 2 && this.people == 0){
             this.warning("报名人数已满！")
@@ -351,13 +369,7 @@
       }
 
 
-      if(this.flag == 2){
-        this.$nextTick(()=>{
-          this.$refs.printButton.click();   //强行触发打印
-          this.$router.push({path:'/userManage/filled'});
-          return;
-        })
-      }
+
 
       if(this.type == 3){
         let totalSeconds = this.timeLimit * 60 - this.duration;
