@@ -195,12 +195,11 @@
           }
 
           if(status == 0){
-            console.log("start print submissionId")
-            console.log(this.submissionId)
+            console.log(this.question);
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
           }
-          else if(status == 1 && this.type == 3){
+          else if((status == 1 && this.type == 3) || status == 3){
             
             let sum = 0,i = 0;
             for(i=0;i<this.questionList.length;i++){
@@ -340,8 +339,6 @@
           this.description = result.description;
           this.submissionId = result.submissionID;
 
-          console.log(this.questionList);
-
           if(this.flag == 2){
             this.$nextTick(()=>{
               this.$refs.printButton.click();   //强行触发打印
@@ -368,7 +365,7 @@
               if (totalSeconds <= 0) {
                 this.warning("考试时间到！试卷回收");
                 clearInterval(this.intervalId);
-                this.postFill(1);
+                this.postFill(3);
               }
               
             },1000);
