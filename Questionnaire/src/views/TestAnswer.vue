@@ -249,15 +249,18 @@
       },
       //获取问卷信息接口
       getFill(){
-        var promise = GetFillInTestAnswer(this.username, this.questionnaireId, this.submissionId);
-        promise.then((result)=>{
+        var promise;
+        promise = GetFillInTestAnswer(this.username, this.questionnaireId, this.submissionId);
+        promise.then((result) => {
           this.questionListFill = result.questionList;
           this.title = result.title;
           this.description = result.description;
           this.score = result.score;
           this.questionCnt = this.questionListFill.length;
         })
-        
+        console.log(this.score)
+        console.log(this.questionListFill)
+        // console.log(questionListFill[0])
       },
       warning(content){
         ElMessage({
@@ -270,9 +273,9 @@
     NavigationBar,
     },
     mounted(){
-      // this.addSingle();
-      // this.addMultiple();
-      // this.addFill();
+      this.addSingle();
+      this.addMultiple();
+      this.addFill();
     },
     beforeUnmount(){
       if(this.intervalId){
@@ -284,8 +287,8 @@
       ElMessage,
     },
     created(){
-    this.questionnaireId = this.$route.query.questionnaireID;
-    this.submissionId = this.$route.query.submissionID;
+    this.questionnaireId = this.$route.query.questionnaireId;
+    this.submissionId = this.$route.query.submissionId;
     this.score = this.$route.query.score;
     console.log(this.questionnaireId + "," + this.submissionId + "," +this.score);
     

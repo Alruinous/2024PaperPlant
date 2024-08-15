@@ -136,12 +136,11 @@ def display_answer_test(request,username,questionnaireId,submissionId):
     all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
                                                     ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
                                                     RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionID','QuestionNumber').all())
-                                                    
+    
     # 将迭代器转换为列表 (按QuestionNumber递增排序)
     all_questions_list = list(all_questionList_iterator)
     all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
 
-    print(all_questions_list.length())
     questionList=[]
     #print(all_questions)
     for question in all_questions_list:
@@ -205,6 +204,7 @@ def display_answer_test(request,username,questionnaireId,submissionId):
 
 
     data={'Title':survey.Title,'description':survey.Description,'questionList':questionList,'score':score}
+    print(questionList[0])
     return JsonResponse(data)
 
 
@@ -335,29 +335,19 @@ class GetStoreFillView(APIView):
 
 #问卷填写界面：从前端接收用户的填写记录(POST)
 def get_submission(request):
-    print("lorian")
     if(request.method=='POST'):
-        print("lorian")
         try:
+            print("lorian")
             body=json.loads(request.body)
-            print("lorian")
             surveyID=body['surveyID']    #问卷id
-            print("lorian")
             status=body['status']  #填写记录状态
-            print("lorian")
             submissionID=body['submissionID']   #填写记录ID
-            print(body['submissionID'])
-            print("lorian")
             username=body['username']     #填写者
-            print("lorian")
             submissionList=body['question']     #填写记录
             duration=body['duration']  
 
             score=body['score'] 
 
-            # print(status)
-            print("lorian")
-            print(submissionList)
 
             survey=Survey.objects.get(SurveyID=surveyID)
             if survey is None:
@@ -402,7 +392,7 @@ def get_submission(request):
                 if RatingAnswer_query.exists():
                     for ratingAnswer in RatingAnswer_query:
                         ratingAnswer.delete()
-            index=1
+
             for submissionItem in submissionList:
                 questionID=submissionItem["questionID"]     #问题ID
                 answer=submissionItem['value']        #用户填写的答案
@@ -469,7 +459,8 @@ def get_submission(request):
             return JsonResponse({'error': 'Invalid JSON body'}, status=400)
         except Exception as e:  
             return JsonResponse({'error': str(e)}, status=500) 
-    data={'message':True}
+    data={'message':True,'submissionId':submissionID}
+    print(submissionID)
     return JsonResponse(data)
     #return JsonResponse({'error': 'Invalid request method'}, status=405)
 

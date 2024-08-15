@@ -246,8 +246,8 @@
             this.score = sum;
             promise = PostFill(this.questionnaireId,'Graded',this.question,this.duration,this.submissionId,this.username, this.score);
             promise.then((result)=>{
-              this.submissionId = result.submissionID;
-              this.$router.push({path:'/testAnswer',query:{questionnaireID:this.questionnaireId,submissionID:this.submissionId,score:this.score}}); 
+              this.submissionId = result.submissionId;
+              this.$router.push({path:'/testAnswer',query:{questionnaireId:this.questionnaireId,submissionId:this.submissionId,score:this.score}}); 
             })
             
           }
