@@ -201,9 +201,9 @@
       },
 
       getFill(){
-        console.log("getfill questionnaireid submissionID in normalAnswer")
-        console.log(this.questionnaireId)
-        console.log(this.submissionId)
+        // console.log("getfill questionnaireid submissionID in normalAnswer")
+        // console.log(this.questionnaireId)
+        // console.log(this.submissionId)
         var promise = GetFillInNormalAnswer(this.username, this.questionnaireId, this.submissionId);
         promise.then((result)=>{
           this.questionListFill = result.questionList;
@@ -228,35 +228,23 @@
     NavigationBar,
     },
     mounted(){
-      // this.addSingle();
-      // this.addMultiple();
-      // this.addFill();
-      // this.addScore();
-      // this.intervalId = setInterval(() => {
-      //   this.time++;
-      // },1000);
+      this.questionnaireId = this.$route.query.questionnaireID;
+      this.submissionId = this.$route.query.submissionID;
+      
+      const internalInstance = getCurrentInstance();
+      const internalData = internalInstance.appContext.config.globalProperties;
+      this.username = internalData.$cookies.get('username'); // 后面的为之前设置的cookies的名字
+      this.getFill();
     },
     beforeUnmount(){
-    if(this.intervalId){
-      clearInterval(this.intervalId);
-    }
+      if(this.intervalId){
+        clearInterval(this.intervalId);
+      }
     },
     components:{
-    NavigationBar,
-    ElMessage,
+      NavigationBar,
+      ElMessage,
     },
-    created(){
-    this.questionnaireId = this.$route.query.questionnaireID;
-    this.submissionId = this.$route.query.submissionID;
-    console.log("created in normalAnswer questionnaireid submissionid")
-    console.log(this.questionnaireId)
-    console.log(this.submissionId)
-    
-    const internalInstance = getCurrentInstance();
-    const internalData = internalInstance.appContext.config.globalProperties;
-    this.username = internalData.$cookies.get('username'); // 后面的为之前设置的cookies的名字
-    this.getFill();
-  }
   })
 </script>
   

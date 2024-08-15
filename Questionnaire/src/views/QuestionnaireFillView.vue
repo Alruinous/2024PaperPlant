@@ -260,15 +260,11 @@
             this.$router.push("/userManage");
           }
           else {
-            console.log("start putong ");
-            console.log(this.submissionId);
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0, this.submissionId,this.username, 0);
             promise.then((result)=>{
               this.submissionId = result.submissionID;
+              console.log(this.submissionId);
             })
-            console.log("start to normalAnswer")
-            console.log(this.questionnaireId)
-            console.log(this.submissionId)
             this.$router.push({path:'/normalAnswer',query:{questionnaireID:this.questionnaireId, submissionID:this.submissionId}}); 
           }
           // this.$router.push('/userManage');
@@ -324,11 +320,7 @@
       if(this.flag == 2) {
         this.submissionId = -1; //GetStoreFill 只返回题干
       }
-    
-      // console.log("created")
-      // console.log(this.username)
-      // console.log(this.questionnaireId)
-      // console.log(this.submissionId)
+
       
       if(this.$cookies.isKey('username') || this.flag == 2){
         const internalInstance = getCurrentInstance()
