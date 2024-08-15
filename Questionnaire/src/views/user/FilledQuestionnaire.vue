@@ -179,7 +179,7 @@ const initFilled = (username) =>{
     questionnaires.value = [];  
     var promise = GetFilledQs(username);
     promise.then((result)=>{
-        console.log(result.data[0]);
+        // console.log(result.data[0]);
         // var categoryName = "";
         // if(categoryId.value != ""){
         //     categorys.value.forEach(category => {

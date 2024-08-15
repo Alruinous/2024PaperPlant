@@ -188,13 +188,21 @@
             return;
           }
           var promise;   
+
+          // console.log("start print this.question1")
+          // console.log(this.question.length)
           
           let i = 0;
           for(i;i < this.questionList.length;i++){
             this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer});
+            // console.log("start print this.question2")
+            // console.log(this.question.length)
           }
+          // console.log(this.question)
 
           if(status == 0){
+            console.log("start print submissionId")
+            console.log(this.submissionId)
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
           }
@@ -315,6 +323,9 @@
       this.submissionId = parseInt(this.$route.query.submissionId);
       this.flag = this.$route.query.flag;
 
+      console.log("print mounted submissionId")
+      console.log(this.submissionId)
+
       if(this.flag == 2) {
         this.submissionId = -1; //GetStoreFill 只返回题干
       }
@@ -337,7 +348,8 @@
           this.questionList = result.questionList;
           this.duration = result.duration;
           this.description = result.description;
-          this.submissionId = result.submissionId;
+          this.submissionId = result.submissionID;
+          console.log(this.submissionId);
 
           if(this.flag == 2){
             this.$nextTick(()=>{
@@ -392,7 +404,7 @@
   </script>
   
   <!-- TieZhu：scoped保证样式只会应用到当前 .vue 文件 -->
-  <style scoped>
+<style scoped>
   
   .right{
     position: relative;
@@ -445,4 +457,4 @@
     color: #626aef;
     font-weight: bold;
   }
-  </style>
+</style>
