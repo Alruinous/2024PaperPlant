@@ -181,24 +181,18 @@
             this.questionCnt++;
             this.questionList.push({"type":4,"isNecessary":true,"question":"请评分","Answer":ref(0)});
         },
-        //暂存/提交,如果status是0，那么是暂存，如果status是1.那么根据问卷类型判断是已批改还是已提交
+        //暂存/提交,如果status是0，那么是暂存，如果status是1.那么根据问卷类型判断是已批改还是已提交，如
         postFill(status){
 
           if(status == 1 && !this.canSubmit()){
             return;
           }
           var promise;   
-
-          // console.log("start print this.question1")
-          // console.log(this.question.length)
           
           let i = 0;
           for(i;i < this.questionList.length;i++){
             this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer});
-            // console.log("start print this.question2")
-            // console.log(this.question.length)
           }
-          // console.log(this.question)
 
           if(status == 0){
             console.log("start print submissionId")
@@ -345,6 +339,8 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionID;
+
+          console.log(this.questionList);
 
           if(this.flag == 2){
             this.$nextTick(()=>{
