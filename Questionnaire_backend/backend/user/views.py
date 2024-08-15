@@ -118,6 +118,8 @@ def display_answer_normal(request,username,questionnaireId,submissionId):
 
 #考试问卷的展示界面：
 def display_answer_test(request,username,questionnaireId,submissionId):
+    print("start display_answer_test")
+    print(submissionId)
     user=User.objects.get(username=username)
     if user is None:
         return HttpResponse(content='User not found', status=404) 
@@ -139,7 +141,7 @@ def display_answer_test(request,username,questionnaireId,submissionId):
     all_questions_list = list(all_questionList_iterator)
     all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
 
-    #print(all_questions_list.length())
+    print(all_questions_list.length())
     questionList=[]
     #print(all_questions)
     for question in all_questions_list:

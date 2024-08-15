@@ -270,9 +270,9 @@
     NavigationBar,
     },
     mounted(){
-      this.addSingle();
-      this.addMultiple();
-      this.addFill();
+      // this.addSingle();
+      // this.addMultiple();
+      // this.addFill();
     },
     beforeUnmount(){
       if(this.intervalId){
