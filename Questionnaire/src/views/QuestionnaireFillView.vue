@@ -327,10 +327,10 @@
         this.submissionId = -1; //GetStoreFill 只返回题干
       }
     
-      console.log("created")
-      console.log(this.username)
-      console.log(this.questionnaireId)
-      console.log(this.submissionId)
+      // console.log("created")
+      // console.log(this.username)
+      // console.log(this.questionnaireId)
+      // console.log(this.submissionId)
       
       if(this.$cookies.isKey('username') || this.flag == 2){
         const internalInstance = getCurrentInstance()
