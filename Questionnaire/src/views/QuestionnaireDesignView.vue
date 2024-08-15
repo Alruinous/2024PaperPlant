@@ -126,6 +126,7 @@
         <!-- TieZhu：单选题 -->
         <div v-if="questionList[index-1].type==1" @click="showTB(index-1)" >
           <div>
+            &ensp;{{ index }}.&ensp;
             <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
             <span v-else @click="startEditing(0,index-1,-1)">{{ questionList[index-1].text }}</span>
           </div>
@@ -164,6 +165,7 @@
         <!-- TieZhu：多选题 -->
         <div v-if="questionList[index-1].type==2" @click="showTB(index-1)" >
           <div>
+            &ensp;{{ index }}.&ensp;
             <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
             <span v-else @click="startEditing(0,index-1,-1)">{{ questionList[index-1].text }}</span>
           </div>
@@ -197,6 +199,7 @@
 
         <!-- TieZhu:填空题 -->
         <div v-if="questionList[index-1].type==3" @click="showTB(index-1)">
+          &ensp;{{ index }}.&ensp;
           <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
           <span v-else @click="startEditing(0,index-1,0)">{{ questionList[index-1].text }}</span>
           <br/>
@@ -208,6 +211,7 @@
 
         <!-- TieZhu:评分题 -->
         <div v-if="questionList[index-1].type==4" @click="showTB(index-1)">
+          &ensp;{{ index }}.&ensp;
           <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
           <span v-else @click="startEditing(0,index-1,0)">{{ questionList[index-1].text }}</span>
           <br/>

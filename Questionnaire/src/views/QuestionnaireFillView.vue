@@ -8,9 +8,7 @@
         <div class="title">{{ title }}</div>
         <div>{{ description }}</div>
         <van-divider  :style="{ color: '#626aef', borderColor: '#626aef', padding: '0 16px' }"></van-divider>
-        <div v-if="type==3" id="time" class="time">
-          剩余时间
-        </div>
+        <div v-if="type==3" id="time" class="time"></div>
         <div v-if="type==2" class="time">
           剩余人数:{{ people }}
         </div>
@@ -41,7 +39,7 @@
           <!-- TieZhu：单选题 -->
           <div v-if="questionList[index-1].type==1">
             <div style="margin-left: 0.5%">
-              {{ questionList[index-1].question }}
+              &ensp;{{ index }}.&ensp;{{ questionList[index-1].question }}
             </div>
             <br/>
             <van-radio-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt" :disabled="flag">
@@ -59,7 +57,7 @@
           <!-- TieZhu：多选题 -->
           <div v-if="questionList[index-1].type==2">
             <div style="margin-left: 0.5%">
-                {{ questionList[index-1].question }}
+              &ensp;{{ index }}.&ensp;{{ questionList[index-1].question }}
             </div>
             
             <van-checkbox-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt"  checked-color="#0283EF" :disabled="flag">
@@ -78,7 +76,7 @@
           <!-- TieZhu:填空题 -->
           <div v-if="questionList[index-1].type==3">
             <div style="margin-left: 0.5%">
-              {{ questionList[index-1].question }}
+              &ensp;{{ index }}.&ensp;{{ questionList[index-1].question }}
             </div>
             <br/>
             <br/>
@@ -90,7 +88,7 @@
           <!-- TieZhu:评分题 -->
           <div v-if="questionList[index-1].type==4">
             <div style="margin-left: 0.5%">
-              {{ questionList[index-1].question }}
+              &ensp;{{ index }}.&ensp;{{ questionList[index-1].question }}
             </div>
             <br/>
             <el-rate v-model="questionList[index-1].Answer" :disabled="flag"></el-rate>
@@ -255,8 +253,8 @@
             promise = PostFill(this.questionnaireId,'Graded',this.question,this.duration,this.submissionId,this.username, this.score);
             promise.then((result)=>{
               this.submissionId = result.submissionID;
+              this.$router.push({path:'/testAnswer',query:{questionnaireID:this.questionnaireId,submissionID:this.submissionId,score:this.score}}); 
             })
-            this.$router.push({path:'/testAnswer',query:{questionnaireID:this.questionnaireId,submissionID:this.submissionId,score:this.score}}); 
             
           }
           else if(status == 1 && this.type == 1){
