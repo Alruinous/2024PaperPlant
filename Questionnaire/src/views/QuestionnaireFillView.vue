@@ -183,18 +183,18 @@
             this.questionCnt++;
             this.questionList.push({"type":4,"isNecessary":true,"question":"请评分","Answer":ref(0)});
         },
-        createQuestionInpostFill(){
-          this.questionList.forEach(tmp=>{
-            this.question.push({"questionID":tmp.questionID, "question":tmp.question, "value":tmp.Answer});
-          })
-        },
         //暂存/提交,如果status是0，那么是暂存，如果status是1.那么根据问卷类型判断是已批改还是已提交
         postFill(status){
-          this.createQuestionInpostFill();
+
           if(status == 1 && !this.canSubmit()){
             return;
           }
-          var promise;        
+          var promise;   
+          
+          let i = 0;
+          for(i;i < this.questionList.length;i++){
+            this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer});
+          }
 
           if(status == 0){
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
@@ -316,34 +316,7 @@
       ElMessage,
      },
      mounted(){
-      if(this.type == 3){
-        let totalSeconds = this.timeLimit * 60 - this.duration;
-        const timeDisplay = document.getElementById('time');
-        this.intervalId = setInterval(() => {
-          totalSeconds--;
-          this.duration++;
-          const minutes = Math.floor(totalSeconds / 60);
-          const seconds = totalSeconds % 60;
-          timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-          if (totalSeconds <= 0) {
-            this.warning("考试时间到！试卷回收");
-            clearInterval(this.intervalId);
-            this.postFill(1);
-          }
-        },1000);
-      }
-     },
-     beforeUnmount(){
-      if(this.intervalId){
-        clearInterval(this.intervalId);
-      }
-     },
-     components:{
-      NavigationBar,
-      ElMessage,
-     },
-     created(){
       var promise;
       this.questionnaireId = parseInt(this.$route.query.questionnaireId);
       this.type = this.$route.query.questionnaireType;
@@ -360,12 +333,6 @@
         const internalInstance = getCurrentInstance()
         const internalData = internalInstance.appContext.config.globalProperties
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
-
-        console.log("22")
-        console.log(this.username)
-        console.log(this.questionnaireId)
-        console.log(this.submissionId)
-
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise.then((result) => {
           console.log("promise")
@@ -377,13 +344,6 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionId;
-
-          console.log("promise")
-
-          if (location.href.indexOf("#reloaded") == -1) {
-            location.href = location.href + "#reloaded";
-            window.location.reload();
-          }
 
           if(this.type == 2 && this.people == 0){
             this.warning("报名人数已满！")
@@ -397,6 +357,7 @@
         this.$router.push({path:'/login',query:{questionnaireId:this.questionnaireId}});
       }
 
+
       if(this.flag == 2){
         this.$nextTick(()=>{
           this.$refs.printButton.click();   //强行触发打印
@@ -404,7 +365,41 @@
           return;
         })
       }
-      
+
+      if(this.type == 3){
+        // 在 DOM 渲染后执行
+        this.$nextTick(() => {
+          let totalSeconds = this.timeLimit * 60 - this.duration;
+          const timeDisplay = document.getElementById("time");
+          if(timeDisplay){
+            console.log("+++++++");
+          }
+          this.intervalId = setInterval(() => {
+            totalSeconds--;
+            this.duration++;
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (totalSeconds <= 0) {
+              this.warning("考试时间到！试卷回收");
+              clearInterval(this.intervalId);
+              this.postFill(1);
+            }
+          },1000);
+        });
+
+      }
+
+     },
+     beforeUnmount(){
+      if(this.intervalId){
+        clearInterval(this.intervalId);
+      }
+     },
+     components:{
+      NavigationBar,
+      ElMessage,
      },
    })
   </script>
