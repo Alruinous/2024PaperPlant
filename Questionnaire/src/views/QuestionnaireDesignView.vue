@@ -265,7 +265,7 @@
 
           <div style="color:#797D7F" v-if="type==3 && questionList[index-1].type == 3">
             正确答案：
-            <el-input style="width: 20%;" v-model="questionList[index-1].answer" :min="0" controls-position="right"/>
+            <el-input style="width: 20%;" v-model="questionList[index-1].correctAnswer" :min="0" controls-position="right"/>
           </div>
 
           <el-divider border-style="dashed"></el-divider>
@@ -617,7 +617,7 @@ const router = useRouter();
             }
           }
           else{
-            this.questionList[i].answer = "";
+            this.questionList[i].correctAnswer = "";
           }
         }
       })
