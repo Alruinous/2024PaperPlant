@@ -323,7 +323,10 @@
       this.submissionId = parseInt(this.$route.query.submissionId);
       this.flag = this.$route.query.flag;
 
-      this.submissionId = 18;
+      if(this.flag == 2) {
+        this.submissionId = -1; //GetStoreFill 只返回题干
+      }
+    
       console.log("created")
       console.log(this.username)
       console.log(this.questionnaireId)
@@ -345,6 +348,14 @@
           this.description = result.description;
           this.submissionId = result.submissionId;
 
+          if(this.flag == 2){
+            this.$nextTick(()=>{
+              this.$refs.printButton.click();   //强行触发打印
+              this.$router.push({path:'/userManage/filled'});
+              return;
+            })
+          }
+
           if(this.type == 2 && this.people == 0){
             this.warning("报名人数已满！")
             this.$router.push({path:'/userManage/filled'});
@@ -358,13 +369,7 @@
       }
 
 
-      if(this.flag == 2){
-        this.$nextTick(()=>{
-          this.$refs.printButton.click();   //强行触发打印
-          this.$router.push({path:'/userManage/filled'});
-          return;
-        })
-      }
+
 
       if(this.type == 3){
         // 在 DOM 渲染后执行
