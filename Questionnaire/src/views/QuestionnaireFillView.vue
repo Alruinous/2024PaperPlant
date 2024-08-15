@@ -1,6 +1,6 @@
 <!-- 问卷设计页面 -->
 <template>
-    <button v-if="flag==2" v-print="printObj" ref="printButton">打印</button>
+    
     <navigation-bar style="position: fixed;"/>
     <div class="back">
 
@@ -108,7 +108,7 @@
       </div>
   
     </div>
-    
+    <button v-if="flag==2" v-print="printObj" ref="printButton">打印</button>
   </template>
   
   <script>
@@ -349,14 +349,26 @@
       this.type = this.$route.query.questionnaireType;
       this.submissionId = parseInt(this.$route.query.submissionId);
       this.flag = this.$route.query.flag;
+
+      this.submissionId = 18;
+      console.log("created")
+      console.log(this.username)
+      console.log(this.questionnaireId)
+      console.log(this.submissionId)
       
       if(this.$cookies.isKey('username') || this.flag == 2){
         const internalInstance = getCurrentInstance()
         const internalData = internalInstance.appContext.config.globalProperties
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
-        // console.log(this.submissionId)
+
+        console.log("22")
+        console.log(this.username)
+        console.log(this.questionnaireId)
+        console.log(this.submissionId)
+
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise.then((result) => {
+          console.log("promise")
           this.title = result.Title;
           this.type = result.category;
           this.people = result.people;
@@ -365,6 +377,8 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionId;
+
+          console.log("promise")
 
           if (location.href.indexOf("#reloaded") == -1) {
             location.href = location.href + "#reloaded";
