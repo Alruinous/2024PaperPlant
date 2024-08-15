@@ -188,13 +188,21 @@
             return;
           }
           var promise;   
+
+          // console.log("start print this.question1")
+          // console.log(this.question.length)
           
           let i = 0;
           for(i;i < this.questionList.length;i++){
             this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer});
+            // console.log("start print this.question2")
+            // console.log(this.question.length)
           }
+          // console.log(this.question)
 
           if(status == 0){
+            console.log("start print submissionId")
+            console.log(this.submissionId)
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
           }
@@ -328,6 +336,7 @@
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise.then((result) => {
+
           this.title = result.Title;
           this.type = result.category;
           this.people = result.people;
@@ -335,7 +344,7 @@
           this.questionList = result.questionList;
           this.duration = result.duration;
           this.description = result.description;
-          this.submissionId = result.submissionId;
+          this.submissionId = result.submissionID;
 
           if(this.flag == 2){
             this.$nextTick(()=>{
@@ -390,7 +399,7 @@
   </script>
   
   <!-- TieZhu：scoped保证样式只会应用到当前 .vue 文件 -->
-  <style scoped>
+<style scoped>
   
   .right{
     position: relative;
@@ -443,4 +452,4 @@
     color: #626aef;
     font-weight: bold;
   }
-  </style>
+</style>
