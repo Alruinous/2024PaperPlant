@@ -339,6 +339,9 @@
           this.description = result.description;
           this.submissionId = result.submissionID;
 
+          console.log("TieZhu");
+          console.log(this.questionList);
+
           if(this.flag == 2){
             this.$nextTick(()=>{
               this.$refs.printButton.click();   //强行触发打印

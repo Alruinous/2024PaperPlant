@@ -420,6 +420,7 @@ def get_submission(request):
                     questionNewList.append(ratingQuestion_query.first())
                 
                 question=questionNewList[0]
+                print(question)
 
                 # print(question.CorrectAnswer)
                 if question is None:
@@ -536,6 +537,7 @@ def save_qs_design(request):
             Is_released=body['Is_released'] #保存/发布
 
             questionList=body['questionList']   #问卷题目列表
+            print(questionList)
             user=User.objects.get(username=username)
             if user is None:        
                 return HttpResponse(content='User not found', status=400) 
@@ -548,8 +550,6 @@ def save_qs_design(request):
                                              TotalScore=0,TimeLimit=timelimit,IsOrder=isOrder,QuotaLimit=people
                                             )
                 survey.QuotaLimit=people
-                print("TieZhu")
-                print(questionList)
             #已有该问卷的编辑记录
             else:
                 survey=Survey.objects.get(SurveyID=surveyID)
@@ -602,13 +602,10 @@ def save_qs_design(request):
                         jdex=jdex+1
                 
                 elif question["type"]==3:                          #填空
-                    print("TieZhu")
                     question=BlankQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
                                                               Score=question["score"],QuestionNumber=index,Category=question["type"],
                                                               CorrectAnswer=question["correctAnswer"])
-                    print("TieZhu")
                     question.save()
-                    print("TieZhu")
                 
                 else:                                           #评分题
                     question=RatingQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
