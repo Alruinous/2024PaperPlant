@@ -64,7 +64,7 @@
             
             <van-checkbox-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt"  checked-color="#0283EF" :disabled="flag">
                 <br/>
-                <van-checkbox :name="questionList[index-1].optionList[index2-1].optionId" shape="square" :label-disabled=true @click="print(questionList[index-1].Answer)">
+                <van-checkbox :name="questionList[index-1].optionList[index2-1].optionId" shape="square" :label-disabled=true>
                     <div>
                       {{ questionList[index-1].optionList[index2-1].content }}
                     </div>
@@ -185,25 +185,17 @@
         },
         createQuestionInpostFill(){
           this.questionList.forEach(tmp=>{
-            // console.log("start")
-            // console.log(tmp.questionID)
-            // console.log(tmp.Answer)
             this.question.push({"questionID":tmp.questionID, "question":tmp.question, "value":tmp.Answer});
           })
         },
         //暂存/提交,如果status是0，那么是暂存，如果status是1.那么根据问卷类型判断是已批改还是已提交
         postFill(status){
           this.createQuestionInpostFill();
-          console.log(this.question);
-          console.log(this.questionnaireId);
-          console.log(this.submissionId);
-
-          if(this.time <= this.timeLimit && !this.canSubmit()){
+          if(status == 1 && !this.canSubmit()){
             return;
           }
           var promise;
           if(status == 0){
-            // console.log(this.)
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
           }
@@ -302,7 +294,7 @@
               this.warning("有必填题目没有填写！")
               return false;
             }
-            else if(this.questionList[i].type == 2 && this.questionList[i].isNecessary && this.questionList[i].Answer==[-1]){
+            else if(this.questionList[i].type == 2 && this.questionList[i].isNecessary && this.questionList[i].Answer==[]){
               this.warning("有必填题目没有填写！")
               return false;
             }
@@ -361,9 +353,9 @@
       this.submissionId = parseInt(this.$route.query.submissionId);
       this.flag = this.$route.query.flag;
 
-      console.log("start222");
-      console.log(this.questionnaireId);
-      console.log(this.submissionId);
+      // console.log("start222");
+      // console.log(this.questionnaireId);
+      // console.log(this.submissionId);
       if(this.flag == 2){
         this.$nextTick(()=>{
           this.$refs.printButton.click();   //强行触发打印
@@ -379,23 +371,29 @@
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise.then((result) => {
           this.title = result.Title;
-          console.log("start");
-          console.log(result.Title);
-          console.log(result.questionList);
           this.type = result.category;
           this.people = result.people;
           this.timeLimit = result.TimeLimit;
           this.questionList = result.questionList;
           this.duration = result.duration;
           this.description = result.description;
+
+          // 保证只刷新一次
+          // 检查本地存储中是否有刷新标记
+          if (!localStorage.getItem('pageRefreshed')) {
+            // 如果没有刷新标记，刷新页面
+            localStorage.setItem('pageRefreshed', 'true');
+            window.location.reload();
+          }
+
           // this.submissionId = result.submissionId;
-          console.log("questionList Answer")
-          console.log(this.questionList[0].Answer)
-          console.log(this.questionList[1].Answer)
-          console.log(this.questionList[2].Answer)
-          console.log(this.questionList[3].Answer)
-          console.log(this.questionList[4].Answer)
-          console.log(this.questionList[5].Answer)
+          // console.log("questionList Answer")
+          // console.log(this.questionList[0].Answer)
+          // console.log(this.questionList[1].Answer)
+          // console.log(this.questionList[2].Answer)
+          // console.log(this.questionList[3].Answer)
+          // console.log(this.questionList[4].Answer)
+          // console.log(this.questionList[5].Answer)
 
           if(this.type == 2 && this.people == 0){
             this.warning("报名人数已满！")
@@ -408,6 +406,11 @@
         this.warning("请先登录！");
         this.$router.push({path:'/login',query:{questionnaireId:this.questionnaireId}});
       }
+     },
+     destroyed() {
+      // 在组件销毁时清除刷新标记
+      // 这样在用户下次访问页面时可以再次刷新
+      localStorage.removeItem('pageRefreshed');
      }
    })
   </script>
