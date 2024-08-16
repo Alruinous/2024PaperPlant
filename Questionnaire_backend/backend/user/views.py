@@ -228,7 +228,6 @@ class GetStoreFillView(APIView):
           
         
         #从问卷广场界面进入：查找该用户是否有该问卷未提交的填写记录
-        print(submissionID)
         if submissionID=="-1":
             submission_query=Submission.objects.filter(Respondent=user,Survey=survey,Status='Unsubmitted')
             if submission_query.exists():
@@ -247,7 +246,7 @@ class GetStoreFillView(APIView):
 
         #submissionID=-2时,只传回问卷题干(同问卷编辑的GET接口)
         elif submissionID=="-2":
-            print("here---")
+            print("--here---")
             all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
                                                     ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
                                                     RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())
@@ -285,14 +284,11 @@ class GetStoreFillView(APIView):
             return JsonResponse(data)
         
         submission=Submission.objects.filter(SubmissionID=submissionID).first()
-        print("lorian")
+        print(submission.Interval)
         # print(submission)
         if not submission:
             return HttpResponse(content='Submission not found', status=404) 
-            
-        duration=submission.Interval
     
-        
         Title=survey.Title
         Description=survey.Description
         category=survey.Category
@@ -376,10 +372,9 @@ class GetStoreFillView(APIView):
 
 
         #传回题干和填写记录
-        else:
-            data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
-              'description':survey.Description,'questionList':questionList,'duration':duration, 'submissionID':submissionID}
-            return JsonResponse(data)
+        data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
+            'description':survey.Description,'questionList':questionList,'duration':submission.Interval, 'submissionID':submissionID}
+        return JsonResponse(data)
         
 
 #问卷填写界面：从前端接收用户的填写记录(POST)
@@ -394,6 +389,8 @@ def get_submission(request):
             username=body['username']     #填写者
             submissionList=body['question']     #填写记录
             duration=body['duration']  
+
+            print(duration)
 
             score=body['score'] 
 
@@ -414,7 +411,7 @@ def get_submission(request):
             if submissionID==-1:
                 submission=Submission.objects.create(Survey=survey,Respondent=user,
                                              SubmissionTime=timezone.now(),Status=status,
-                                             Interval=0,Score=score)
+                                             Interval=duration,Score=score)
             
             #已存在，删除填写记录的所有内容
             else:
@@ -423,6 +420,7 @@ def get_submission(request):
                     return HttpResponse(content='Submission not found',status=404)
                 submission.Score=score
                 submission.Status=status
+                submission.Interval=duration
                 submission.save()
                 
                 #所有选择题的填写记录
