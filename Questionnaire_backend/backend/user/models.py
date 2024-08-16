@@ -125,11 +125,11 @@ class Submission(models.Model):
     Interval=models.IntegerField(null=True, blank=True)
 
 class SurveyStatistic(models.Model):
-    StatisticID = models.AutoField(primary_key=True)
+    StatisticID = models.AutoField(primary_key=True)    
     Survey = models.OneToOneField(Survey, on_delete=models.CASCADE, related_name='statistics')
-    TotalResponses = models.IntegerField(default=0) #已提交的数量
-    AverageScore = models.FloatField(null=True, blank=True)
-    LastResponseDate = models.DateTimeField(null=True, blank=True)
+    TotalResponses = models.IntegerField(default=0)     #已提交的数量
+    AverageScore = models.FloatField(null=True, blank=True)     #考试问卷：平均分
+    LastResponseDate = models.DateTimeField(null=True, blank=True)  #最后一个提交的时间
 
 class Template(models.Model):
     TemplateID = models.AutoField(primary_key=True)
