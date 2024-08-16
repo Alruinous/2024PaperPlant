@@ -268,8 +268,6 @@
           this.description = result.description;
           this.score = result.score;
           this.questionCnt = this.questionListFill.length;
-
-          this.addMultiple();
         })
         
         // console.log(this.score)
