@@ -194,7 +194,6 @@
             this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer ,"category":this.questionList[i].type});
           }
 
-
           if(status == 0){
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
@@ -317,11 +316,6 @@
       this.submissionId = parseInt(this.$route.query.submissionId);
       this.flag = this.$route.query.flag;
 
-      console.log("start mounted")
-      console.log(this.questionnaireId)
-      console.log(this.submissionId)
-      // console.log(this.flag)
-
       if(this.flag == 2) {
         this.submissionId = -2; //GetStoreFill 只返回题干
       }
@@ -341,8 +335,9 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionID;
-
-          console.log(this.questionList);
+          
+          console.log("Get Data");
+          console.log(this.duration);
 
           if(this.flag == 2){
             this.$nextTick(()=>{
