@@ -40,10 +40,11 @@
             </div>
             <br/>
             <van-radio-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt" :disabled="flag">
-                <van-radio :name="questionList[index-1].optionList[index2-1].optionId" checked-color="#0283EF" :label-disabled=true>
-                    <div>
-                    {{ questionList[index-1].optionList[index2-1].content }}
-                    </div>
+                <van-radio :name="questionList[index-1].optionList[index2-1].optionId" checked-color="#0283EF" :label-disabled=true :disabled="questionList[index-1].optionList[index2-1].MaxSelectablePeople == 0">
+                      <div>
+                        <span>{{ questionList[index-1].optionList[index2-1].content }}</span>
+                        <span v-if="type == 2 && questionList[index-1].isNecessary" style="color:#F8C471 ; font-weight:bold;">&ensp;[ 剩余人数：{{ questionList[index-1].optionList[index2-1].MaxSelectablePeople }} ]</span>
+                      </div>
                 </van-radio>
                 <br/>
             </van-radio-group>
@@ -60,9 +61,10 @@
             <van-checkbox-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt"  checked-color="#0283EF" :disabled="flag">
                 <br/>
                 <van-checkbox :name="questionList[index-1].optionList[index2-1].optionId" shape="square" :label-disabled=true :disabled="questionList[index-1].optionList[index2-1].MaxSelectablePeople == 0">
-                    <div>
-                      {{ questionList[index-1].optionList[index2-1].content }}
-                    </div>
+                  <div>
+                    <span>{{ questionList[index-1].optionList[index2-1].content }}</span>
+                    <span v-if="type == 2 && questionList[index-1].isNecessary" style="color:#F8C471 ; font-weight:bold;">&ensp;[ 剩余人数：{{ questionList[index-1].optionList[index2-1].MaxSelectablePeople }} ]</span>
+                  </div>
                 </van-checkbox>
                 <br/>
             </van-checkbox-group>
@@ -336,8 +338,6 @@
       if(this.flag == 2) {
         this.submissionId = -2; //GetStoreFill 只返回题干
       }
-
-      // console.log(this.submissionId)
       
       if(this.$cookies.isKey('username') || this.flag == 2){
         const internalInstance = getCurrentInstance()
@@ -355,11 +355,6 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionID;
-
-          console.log(this.submissionId)
-
-          // console.log("TieZhu");
-          // console.log(this.questionList);
 
           if(this.flag == 2){
             this.$nextTick(()=>{
