@@ -214,7 +214,15 @@ const deleteQs = (id) =>{
                         message: result.content,
                     })
                 }
-                initCreated(username.value);
+                if(total.value % 4 === 0 && pageNum.value == total.value / 4)
+                {
+                    console.log("222");
+                }
+                else
+                {
+                    initCreated(username.value);
+                }
+                
             })
         })
         .catch(() => {

@@ -163,31 +163,12 @@ const goToQuestionnaireFill = (questionnaireId, submissionId, Status, type, scor
 }
 
 
-
-
-
-
-
-
-
-
-
-
 const flag = ref(true);
 
 const initFilled = (username) =>{
     questionnaires.value = [];  
     var promise = GetFilledQs(username);
     promise.then((result)=>{
-        // console.log(result.data[0]);
-        // var categoryName = "";
-        // if(categoryId.value != ""){
-        //     categorys.value.forEach(category => {
-        //         if (category.id === categoryId) {
-        //             categoryName = category.categoryName;
-        //         }
-        //     });
-        // }
         var count = 0;
         var i = 1;
         result.data.forEach(element => {
@@ -239,7 +220,14 @@ const deleteQs = (id) =>{
                         message: result.content,
                     })
                 }
-                initFilled(username.value);
+                if(total.value % 4 === 0 && pageNum.value == total.value / 4)
+                {
+                    console.log("222");
+                }
+                else
+                {
+                    initFilled(username.value);
+                }
             })
         })
         .catch(() => {
@@ -278,11 +266,8 @@ const handleCreate = () => {
   createDialogVisible.value = false;
 };
 
-
-
-
-
 </script>
+
 <template>
     <el-card class="page-container">
             <div class="header">
