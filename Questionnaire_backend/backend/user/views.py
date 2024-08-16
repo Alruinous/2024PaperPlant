@@ -393,9 +393,6 @@ def get_submission(request):
             username=body['username']     #填写者
             submissionList=body['question']     #填写记录
             duration=body['duration']  
-
-            print(duration)
-
             score=body['score'] 
 
             # print("lorian")
