@@ -566,8 +566,6 @@ const router = useRouter();
             cnt++;
           }
         }
-        console.log(this.questionList[index].max);
-        console.log(cnt);
         if(cnt > this.questionList[index].max){
           this.questionList[index].optionList[index2].isCorrect = false;
           this.warning("正确答案太多")
@@ -580,6 +578,10 @@ const router = useRouter();
       if(this.flag==1){
         this.questionnaireId = -1;
       }
+      if(this.questionList.length == 0){
+        this.warning("不能保存空的问卷")
+        return;
+      }
       var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,false);
       this.$router.push({path:'/userManage/filled'});
       this.success("保存成功");
@@ -588,6 +590,10 @@ const router = useRouter();
     releaseQuestionnaire(){
       if(this.flag==1){
         this.questionnaireId = -1;
+      }
+      if(this.questionList.length == 0){
+        this.warning("不能发布空的问卷");
+        return;
       }
       var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,true);
       this.$router.push({path:'/userManage/filled'});
