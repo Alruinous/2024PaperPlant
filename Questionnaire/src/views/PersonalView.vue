@@ -64,7 +64,7 @@
 
         .aside {
             width: 400px;
-            height: 80%;
+            height: 70%;
             display: flex;
             flex-direction: column;
             

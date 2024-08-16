@@ -284,8 +284,10 @@ class GetStoreFillView(APIView):
                 'description':survey.Description,'questionList':questionList}
             return JsonResponse(data)
         
-        submission=Submission.objects.filter(SubmissionID=submissionID)
-        if not submission.exists():
+        submission=Submission.objects.filter(SubmissionID=submissionID).first()
+        print("lorian")
+        # print(submission)
+        if not submission:
             return HttpResponse(content='Submission not found', status=404) 
             
         duration=submission.Interval
