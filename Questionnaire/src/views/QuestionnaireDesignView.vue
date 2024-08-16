@@ -64,7 +64,10 @@
 
     </div>
     
-    <div class="right">
+    <div class="right"
+    v-loading="isLoading"
+    element-loading-background="rgba(244, 246, 247,0.8)"
+    >
       <div class="title">
         <el-input v-if="ttIsEditing" v-model="title" @blur="finishEditing(-1,0,0)" @keyup.enter="finishEditing(-1,0,0)" clearable/>
         <span v-else @click="startEditing(-1,0,0)">{{ text }}</span>
@@ -121,11 +124,10 @@
             answer:答案
         -->
 
-        <el-icon color="#c45656" style="position: absolute; left: 1%;font-size: 24px;" v-if="questionList[index-1].isNecessary==true"><StarFilled/>&ensp;</el-icon>
-
         <!-- TieZhu：单选题 -->
         <div v-if="questionList[index-1].type==1" @mouseover="showTB(index-1)" >
           <div>
+            <el-icon color="#c45656" style=" left: 1%;font-size: 24px;" v-if="questionList[index-1].isNecessary==true"><StarFilled/>&ensp;</el-icon>
             &ensp;{{ index }}.&ensp;
             <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
             <span v-else @click="startEditing(0,index-1,-1)">{{ questionList[index-1].text }}</span>
@@ -156,7 +158,7 @@
                       <el-tooltip content="正确答案" placement="right">
                         <el-switch v-if="type==3" v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(0,index-1,index2-1)"/>
                       </el-tooltip>
-                      <el-input-number v-if="type==2" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
+                      <el-input-number v-if="type==2 && questionList[index-1].isNecessary" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>
                     </div>
                     
                   </n-popover>
@@ -171,6 +173,7 @@
         <!-- TieZhu：多选题 -->
         <div v-if="questionList[index-1].type==2" @mouseover="showTB(index-1)" >
           <div>
+            <el-icon color="#c45656" style=" left: 1%;font-size: 24px;" v-if="questionList[index-1].isNecessary==true"><StarFilled/>&ensp;</el-icon>
             &ensp;{{ index }}.&ensp;
             <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
             <span v-else @click="startEditing(0,index-1,-1)">{{ questionList[index-1].text }}</span>
@@ -200,7 +203,7 @@
                     <el-tooltip content="正确答案" placement="right">
                       <el-switch v-if="type==3" v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(1,index-1,index2-1)"/>
                     </el-tooltip>
-                    <el-input-number v-if="type==2" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
+                    <el-input-number v-if="type==2 && questionList[index-1].isNecessary" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>
                   </n-popover>
                 </van-checkbox>
                 <br/>
@@ -210,6 +213,7 @@
 
         <!-- TieZhu:填空题 -->
         <div v-if="questionList[index-1].type==3" @mouseover="showTB(index-1)">
+          <el-icon color="#c45656" style=" left: 1%;font-size: 24px;" v-if="questionList[index-1].isNecessary==true"><StarFilled/>&ensp;</el-icon>
           &ensp;{{ index }}.&ensp;
           <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
           <span v-else @click="startEditing(0,index-1,0)">{{ questionList[index-1].text }}</span>
@@ -222,6 +226,7 @@
 
         <!-- TieZhu:评分题 -->
         <div v-if="questionList[index-1].type==4" @mouseover="showTB(index-1)">
+          <el-icon color="#c45656" style=" left: 1%;font-size: 24px;" v-if="questionList[index-1].isNecessary==true"><StarFilled/>&ensp;</el-icon>
           &ensp;{{ index }}.&ensp;
           <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
           <span v-else @click="startEditing(0,index-1,0)">{{ questionList[index-1].text }}</span>
@@ -306,6 +311,7 @@ const router = useRouter();
  export default({
    data(){
     return{
+      isLoading:true,
       input:'',
       username:'',
       questionnaireId:0,
@@ -603,7 +609,8 @@ const router = useRouter();
     if(this.questionnaireId != -1){
       var promise=GetQuestionnaire(this.questionnaireId,"/quetionnaireDesign",true);
       
-      promise.then((result) => {
+      promise
+      .then((result) => {
         this.title = result.Title;
         this.text = this.title;
         this.type = result.category;
@@ -626,6 +633,9 @@ const router = useRouter();
             }
           }
         }
+      })
+      .finally(() => {
+        this.isLoading = false;
       })
     }
    }

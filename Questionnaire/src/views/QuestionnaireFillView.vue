@@ -1,6 +1,6 @@
 <!-- 问卷填写页面 -->
 <template>
-    
+  <div v-loading="isLoading">
     <navigation-bar :message="type==3" style="position: fixed;"/>
     <div class="back">
 
@@ -104,7 +104,8 @@
   
     </div>
     <button v-if="flag==2" v-print="printObj" ref="printButton">打印</button>
-  </template>
+  </div>
+</template>
   
   <script>
   import { GetStoreFill, PostFill } from "@/api/question";
@@ -116,6 +117,7 @@
    export default({
      data(){
       return{
+        isLoading:true,
         input:'',
         username:'',
         questionnaireId:0,
@@ -323,7 +325,8 @@
         const internalData = internalInstance.appContext.config.globalProperties
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
-        promise.then((result) => {
+        promise
+        .then((result) => {
 
           this.title = result.Title;
           this.type = result.category;
@@ -362,6 +365,9 @@
             },1000);
           }
 
+        })
+        .finally(() => {
+          this.isLoading = false; // 数据加载完成，终止加载动画
         })
       }
       else{
