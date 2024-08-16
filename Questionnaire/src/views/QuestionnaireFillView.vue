@@ -40,7 +40,7 @@
             </div>
             <br/>
             <van-radio-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt" :disabled="flag">
-                <van-radio :name="questionList[index-1].optionList[index2-1].optionId" checked-color="#0283EF" :label-disabled=true @click="print(questionList[index-1].optionList[index2-1].optionId)">
+                <van-radio :name="questionList[index-1].optionList[index2-1].optionId" checked-color="#0283EF" :label-disabled=true :disabled="questionList[index-1].optionList[index2-1].MaxSelectablePeople == 0">
                     <div>
                     {{ questionList[index-1].optionList[index2-1].content }}
                     </div>
@@ -318,7 +318,6 @@
       if(this.flag == 2) {
         this.submissionId = -2; //GetStoreFill 只返回题干
       }
-
       
       if(this.$cookies.isKey('username') || this.flag == 2){
         const internalInstance = getCurrentInstance()
@@ -335,9 +334,6 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionID;
-
-          console.log("TieZhu");
-          console.log(this.questionList);
 
           if(this.flag == 2){
             this.$nextTick(()=>{
