@@ -136,6 +136,7 @@
         duration:60,//以秒为单位
         score:0,
         description:'问卷描述',
+        money: 0,
         // submisstionId:0,
         flag:0,//1是预览问卷,2是导出问卷
         question:[], //传给后端的时候用的
@@ -245,6 +246,12 @@
             promise = PostFill(this.questionnaireId,'Graded',this.question,this.duration,this.submissionId,this.username, this.score);
             promise.then((result)=>{
               this.submissionId = result.submissionId;
+              //计算zhibi
+              // if(result.message == "True") {
+              //   this.money += 50;
+              //   $cookies.set('money', this.money);
+              // }
+
               this.$router.push({path:'/testAnswer',query:{questionnaireId:this.questionnaireId,submissionId:this.submissionId,score:this.score}}); 
             })
             
@@ -331,6 +338,7 @@
         const internalInstance = getCurrentInstance()
         const internalData = internalInstance.appContext.config.globalProperties
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
+        this.money = internalData.$cookies.get('money')
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise
         .then((result) => {
