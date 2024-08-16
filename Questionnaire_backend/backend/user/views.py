@@ -246,9 +246,21 @@ class GetStoreFillView(APIView):
         
         #从问卷管理界面进入：
         else:
-            submission=Submission.objects.get(SubmissionID=submissionID)
-            if submission is None:
-                return HttpResponse(content='Submission not found', status=404) 
+            print("TieZhuGieGie")
+            submission=Submission.objects.filter(SubmissionID=submissionID)
+            print(submission)
+            print(submissionID)
+            print("TieZhuGieGie")
+            '''if not submission.exists():
+                print("TieZhuGieGie")
+                return HttpResponse(content='Submission not found', status=404) '''
+            
+            #submissionID=-2时,只传回问卷题干
+            if submissionID=="-2":
+                data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
+                'description':survey.Description,'duration':0}
+                return JsonResponse(data)
+        
             duration=submission.Interval
         
         Title=survey.Title
@@ -256,17 +268,19 @@ class GetStoreFillView(APIView):
         category=survey.Category
         TimeLimit=survey.TimeLimit
         #people=survey.QuotaLimit
-
+        
         '''1.以下部分与问卷编辑界面的get函数类似，拿到题干'''
         '''2.拿到当前submissionID对应填写记录'''
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
                                                     ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
                                                     RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionID','QuestionNumber').all())
                                                     
-        # 将迭代器转换为列表 (按QuestionNumber递增排序)
         all_questions_list = list(all_questionList_iterator)
-        all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
 
+        # 将迭代器转换为列表 (按QuestionNumber递增排序)--顺序展示
+        if survey.IsOrder:
+            all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
+        
         #print(all_questions_list.length())
         questionList=[]
         #print(all_questions)
@@ -298,7 +312,8 @@ class GetStoreFillView(APIView):
                 #将所有选项顺序排列
                 options_query=ChoiceOption.objects.filter(Question=question["QuestionID"]).order_by('OptionNumber')
                 for option in options_query:
-                    optionList.append({'content':option.Text,'optionNumber':option.OptionNumber,'isCorrect':option.IsCorrect,'optionId':option.OptionID})
+                    optionList.append({'content':option.Text,'optionNumber':option.OptionNumber,'isCorrect':option.IsCorrect,
+                                       'optionId':option.OptionID,'MaxSelectablePeople':option.MaxSelectablePeople})
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'optionCnt':question["OptionCnt"],
                                      'optionList':optionList,'Answer':answer})
@@ -329,11 +344,6 @@ class GetStoreFillView(APIView):
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'Answer':answer})
 
-        #submissionID=-2时,只传回问卷题干
-        if submissionID=="-2":
-            data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
-              'description':survey.Description,'duration':duration}
-            return JsonResponse(data)
 
         #传回题干和填写记录
         else:
@@ -449,13 +459,18 @@ def get_submission(request):
                     choiceAnswer=ChoiceAnswer.objects.create(Question=question,Submission=submission,ChoiceOptions=option)
                     choiceAnswer.save()
 
-                    #若已提交，报名问卷的必填选择题中，选择的对应选项-1
+                    #若已提交，报名问卷的必填选择题中，选择的对应选项人数-1
                     if status=='Submitted' and survey.Category==2 and question.IsRequired==True:
+                        print(option.MaxSelectablePeople)
+
                         if option.MaxSelectablePeople<=0:
                             data={'message':'People exceeds'}
                             return JsonResponse(data)
+                        
                         else:
                             option.MaxSelectablePeople-=1
+                            option.save()
+
 
                 elif question.Category==2:     #多选题：Answer为选项ID的数组
                     #为每个用户选择的选项，创建一条ChoiceAnswer记录
@@ -466,6 +481,15 @@ def get_submission(request):
                         choiceAnswer=ChoiceAnswer.objects.create(Question=question,Submission=submission,ChoiceOptions=option)
                         choiceAnswer.save()
 
+                        #若已提交，报名问卷的必填选择题中，选择的对应选项人数-1
+                        if status=='Submitted' and survey.Category==2 and question.IsRequired==True:
+                            if option.MaxSelectablePeople<=0:
+                                data={'message':'People exceeds'}
+                                return JsonResponse(data)
+                            else:
+                                option.MaxSelectablePeople-=1
+                                option.save()
+
                 elif question.Category==3:     #填空题：answer为填写的内容
                     blankAnswer=BlankAnswer.objects.create(Question=question,Submission=submission,Content=answer)
                     blankAnswer.save()
@@ -475,17 +499,6 @@ def get_submission(request):
                     ratingAnswer=RatingAnswer.objects.create(Question=question,Submission=submission,Rate=answer)
                     ratingAnswer.save()
 
-                #若已提交，报名问卷的必填选择题中，选择的对应选项-1
-                if status=='Submitted':
-                    #该问卷所有必填选择题(一定有人数限制)
-                    choiceQuestion_query=ChoiceQuestion.objects.filter(Survey=survey,Category__in=[1,2])
-                    if not choiceQuestion_query.exists():
-                        return HttpResponse(content="Choice questions not found",status=404)
-                    
-                    #该必填选择题的当前填写记录内容
-                    choiceAnswer=ChoiceAnswer.objects.filter(Question=question,Submission=submission)
-                    for choiceQuestion in choiceQuestion_query:
-                        choiceOption_query=ChoiceOption.objects.filter(Question=question)
 
                 
         except json.JSONDecodeError:  
@@ -871,9 +884,12 @@ def check_qs(request,username,questionnaireId,type):
                 choiceOption_query=ChoiceOption.objects.filter(Question=choiceQuestion)
                 #每个选项的剩余人数
                 for choiceOption in choiceOption_query:
+                    print(choiceOption.MaxSelectablePeople)
                     if choiceOption.MaxSelectablePeople>0:
                         isFull=False
                 
+                print("isFull---")
+                print(isFull)
                 if isFull==True:
                     data={'message':False,"content":"当前报名人数已满"}
                     return JsonResponse(data)

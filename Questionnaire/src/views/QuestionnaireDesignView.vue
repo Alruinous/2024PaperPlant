@@ -311,7 +311,7 @@ const router = useRouter();
  export default({
    data(){
     return{
-      isLoading:true,
+      isLoading:false,
       input:'',
       username:'',
       questionnaireId:0,
@@ -607,6 +607,7 @@ const router = useRouter();
     this.type = this.$route.query.questionnaireType;
     this.flag = this.$route.query.flag;
     if(this.questionnaireId != -1){
+      this.isLoading = true;
       var promise=GetQuestionnaire(this.questionnaireId,"/quetionnaireDesign",true);
       
       promise
