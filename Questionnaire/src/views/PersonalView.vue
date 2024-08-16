@@ -31,7 +31,7 @@
     <el-container class="container">
         <el-header><navigation3/></el-header>
         <el-container>
-            <div class = "aside"> 
+            <el-aside class = "aside"> 
                 <button class = "option" @click="gotoPersonalMessage">
                     <img src="@/assets/personalMessageIcon.png" style="width: 50px; height: 50px;"/>
                     <span>个人信息</span>
@@ -44,10 +44,12 @@
                     <img src="@/assets/quit.png" style="width: 50px; height: 50px;"/>
                     <span>退出登录</span>
                 </button>
-            </div>
-            <el-main>
-                <router-view/>
-            </el-main>
+            </el-aside>
+            <el-container>
+                <el-main>
+                    <router-view/>
+                </el-main>
+            </el-container>
         </el-container>
         
     </el-container>
@@ -62,7 +64,7 @@
 
         .aside {
             width: 400px;
-            height: 98%;
+            height: 80%;
             display: flex;
             flex-direction: column;
             
