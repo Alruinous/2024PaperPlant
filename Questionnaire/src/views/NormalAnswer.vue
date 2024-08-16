@@ -223,6 +223,8 @@
     mounted(){
       this.questionnaireId = this.$route.query.questionnaireID;
       this.submissionId = this.$route.query.submissionID;
+      console.log("in NormalAnswerView");
+      console.log(this.submissionId);
       
       const internalInstance = getCurrentInstance();
       const internalData = internalInstance.appContext.config.globalProperties;

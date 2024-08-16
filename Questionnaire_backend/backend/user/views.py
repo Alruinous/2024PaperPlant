@@ -348,7 +348,7 @@ class GetStoreFillView(APIView):
 def get_submission(request):
     if(request.method=='POST'):
         try:
-            print("start get_submission")
+            # print("start get_submission")
             body=json.loads(request.body)
             surveyID=body['surveyID']    #问卷id
             status=body['status']  #填写记录状态
@@ -359,7 +359,10 @@ def get_submission(request):
 
             score=body['score'] 
 
-            print(submissionList)
+            # print("lorian")
+            # print(submissionID)
+
+            # print(submissionList)
 
             survey=Survey.objects.get(SurveyID=surveyID)
             if survey is None:
@@ -369,7 +372,7 @@ def get_submission(request):
             if user is None:
                 return HttpResponse(content='User not found',status=404)
 
-            #当前不存在该填写记录，创建：
+            #当前不存在该填写记录，创建：  //实际上用不到，在getStoreFill的时候就给不存在的submission创建新的Id了
             if submissionID==-1:
                 submission=Submission.objects.create(Survey=survey,Respondent=user,
                                              SubmissionTime=timezone.now(),Status=status,
@@ -402,8 +405,10 @@ def get_submission(request):
                     for ratingAnswer in RatingAnswer_query:
                         ratingAnswer.delete()
 
+            # print("lorian")
+
             for submissionItem in submissionList:
-                print("TieZhu")
+                # print("TieZhu")
                 questionID=submissionItem["questionID"]     #问题ID
                 answer=submissionItem['value']        #用户填写的答案
                 category=submissionItem['category']     #问题类型（用于后续区分，解决不同种类问题的QuestionID会重复的问题）
@@ -437,7 +442,7 @@ def get_submission(request):
                 
                 question=questionNewList[0]
                 
-                print("123154654")
+                # print("123154654")
 
                 # print(question.CorrectAnswer)
                 if question is None:
@@ -473,7 +478,7 @@ def get_submission(request):
                     blankAnswer.save()
                 
                 elif question.Category==4:      #评分题：answer为填写的内容
-                    print(answer)
+                    # print(answer)
                     ratingAnswer=RatingAnswer.objects.create(Question=question,Submission=submission,Rate=answer)
                     ratingAnswer.save()
 
@@ -495,7 +500,7 @@ def get_submission(request):
         except Exception as e:  
             return JsonResponse({'error': str(e)}, status=500) 
     data={'message':True,'submissionId':submissionID}
-    print(submissionID)
+    # print(submissionID)
     return JsonResponse(data)
     #return JsonResponse({'error': 'Invalid request method'}, status=405)
 

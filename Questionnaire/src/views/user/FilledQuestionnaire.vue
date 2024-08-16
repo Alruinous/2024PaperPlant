@@ -278,11 +278,8 @@ const handleCreate = () => {
   createDialogVisible.value = false;
 };
 
-
-
-
-
 </script>
+
 <template>
     <el-card class="page-container">
             <div class="header">
