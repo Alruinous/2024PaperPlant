@@ -9,7 +9,7 @@
         <div>{{ description }}</div>
         <van-divider  :style="{ color: '#626aef', borderColor: '#626aef', padding: '0 16px' }"></van-divider>
         <div v-if="type==3" id="time" class="time"></div>
-        <van-divider v-if="type==3"  :style="{ color: '#626aef', borderColor: '#626aef', padding: '0 15px' }"></van-divider>
+        <van-divider v-if="type==3 && flag!=2"  :style="{ color: '#626aef', borderColor: '#626aef', padding: '0 15px' }"></van-divider>
         <div v-for="index in questionList.length">
   
           <!-- TieZhu:
