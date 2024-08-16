@@ -246,9 +246,21 @@ class GetStoreFillView(APIView):
         
         #从问卷管理界面进入：
         else:
-            submission=Submission.objects.get(SubmissionID=submissionID)
-            if submission is None:
-                return HttpResponse(content='Submission not found', status=404) 
+            print("TieZhuGieGie")
+            submission=Submission.objects.filter(SubmissionID=submissionID)
+            print(submission)
+            print(submissionID)
+            print("TieZhuGieGie")
+            '''if not submission.exists():
+                print("TieZhuGieGie")
+                return HttpResponse(content='Submission not found', status=404) '''
+            
+            #submissionID=-2时,只传回问卷题干
+            if submissionID=="-2":
+                data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
+                'description':survey.Description,'duration':0}
+                return JsonResponse(data)
+        
             duration=submission.Interval
         
         Title=survey.Title
@@ -256,7 +268,7 @@ class GetStoreFillView(APIView):
         category=survey.Category
         TimeLimit=survey.TimeLimit
         #people=survey.QuotaLimit
-
+        
         '''1.以下部分与问卷编辑界面的get函数类似，拿到题干'''
         '''2.拿到当前submissionID对应填写记录'''
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
@@ -268,7 +280,7 @@ class GetStoreFillView(APIView):
         # 将迭代器转换为列表 (按QuestionNumber递增排序)--顺序展示
         if survey.IsOrder:
             all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
-
+        
         #print(all_questions_list.length())
         questionList=[]
         #print(all_questions)
@@ -331,11 +343,6 @@ class GetStoreFillView(APIView):
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'Answer':answer})
 
-        #submissionID=-2时,只传回问卷题干
-        if submissionID=="-2":
-            data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
-              'description':survey.Description,'duration':duration}
-            return JsonResponse(data)
 
         #传回题干和填写记录
         else:
