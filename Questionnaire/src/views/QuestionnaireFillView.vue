@@ -60,7 +60,7 @@
             
             <van-checkbox-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt"  checked-color="#0283EF" :disabled="flag">
                 <br/>
-                <van-checkbox :name="questionList[index-1].optionList[index2-1].optionId" shape="square" :label-disabled=true :disabled="questionList[index-1].optionList[index2-1].MaxSelectablePeople == 0">
+                <van-checkbox :name="questionList[index-1].optionList[index2-1].optionId" shape="square" :label-disabled=true :disabled="questionList[index-1].optionList[index2-1].MaxSelectablePeople == 0" @click="canSelect(index-1)">
                   <div>
                     <span>{{ questionList[index-1].optionList[index2-1].content }}</span>
                     <span v-if="type == 2 && questionList[index-1].isNecessary" style="color:#F8C471 ; font-weight:bold;">&ensp;[ 剩余人数：{{ questionList[index-1].optionList[index2-1].MaxSelectablePeople }} ]</span>
@@ -113,7 +113,7 @@
   import { GetStoreFill, PostFill } from "@/api/question";
   import NavigationBar from "@/components/NavigationBarInQuestionnaire.vue"
   import { ref } from 'vue'
-  import { ElMessage } from 'element-plus'
+  import { ElMessage,ElMessageBox } from 'element-plus'
   import {getCurrentInstance} from 'vue'
 
    export default({
@@ -303,6 +303,13 @@
           }
           return true;
         },
+        //检测是否超过最多选项
+        canSelect(index){
+          if(this.questionList[index].Answer.length > this.questionList[index].max){
+            ElMessageBox.alert("此题最多只能选择"+this.questionList[index].max+"项", '', {confirmButtonText: '确认'})
+            this.questionList[index].Answer.splice(-1);
+          }
+        }
      },
      components:{
       NavigationBar,
@@ -335,12 +342,6 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionID;
-          
-          console.log("Get Data");
-          console.log(this.duration);
-
-          console.log("Get");
-          console.log(this.duration);
 
           if(this.flag == 2){
             this.$nextTick(()=>{
