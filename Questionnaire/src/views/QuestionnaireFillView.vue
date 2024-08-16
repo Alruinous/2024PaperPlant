@@ -264,7 +264,6 @@
             })
             this.$router.push({path:'/normalAnswer',query:{questionnaireID:this.questionnaireId, submissionID:this.submissionId}}); 
           }
-          // this.$router.push('/userManage');
         },
         warning(content){
           ElMessage({

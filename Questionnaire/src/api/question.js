@@ -45,7 +45,6 @@ export function PostQuestion(surveyID,title,category,isOrder,timeLimit,questionL
     data.userName=userName;         //创建者用户名
     data.description=description;   //问卷描述
     data.Is_released = Is_released;
-    console.log(questionList);
     return post('/questionnaireDesign',data);
 }
 //下载excel表格
