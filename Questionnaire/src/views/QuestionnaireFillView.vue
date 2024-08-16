@@ -183,9 +183,6 @@
         },
         //暂存/提交,如果status是0，那么是暂存，如果status是1.那么根据问卷类型判断是已批改还是已提交，如
         postFill(status){
-          console.log("start postFill")
-          console.log(this.questionnaireId)
-          console.log(this.submissionId)
 
           if(status == 1 && !this.canSubmit()){
             return;
@@ -197,10 +194,7 @@
             this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer ,"category":this.questionList[i].type});
           }
 
-          console.log("lorian")
-
           if(status == 0){
-            // console.log(this.question);
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
           }
@@ -268,17 +262,9 @@
             this.$router.push("/userManage");
           }
           else {
-            // console.log("lorian");
-            // console.log(this.submissionId)
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0, this.submissionId,this.username, 0);
-            // console.log("lorian");
             promise.then((result)=>{
-              // console.log("lorian");
-              this.submissionId = result.submissionId;
-              // console.log("in QuestionFillView");
-              // console.log(this.submissionId);
-              
-
+              this.submissionId = result.submissionId;      
               this.$router.push({path:'/normalAnswer',query:{questionnaireID:this.questionnaireId, submissionID:this.submissionId}}); 
             })
             
@@ -332,11 +318,6 @@
       this.submissionId = parseInt(this.$route.query.submissionId);
       this.flag = this.$route.query.flag;
 
-      console.log("start mounted")
-      console.log(this.questionnaireId)
-      console.log(this.submissionId)
-      // console.log(this.flag)
-
       if(this.flag == 2) {
         this.submissionId = -2; //GetStoreFill 只返回题干
       }
@@ -348,7 +329,6 @@
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise
         .then((result) => {
-          console.log(this.submissionId)
 
           this.title = result.Title;
           this.type = result.category;
@@ -357,6 +337,12 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionID;
+          
+          console.log("Get Data");
+          console.log(this.duration);
+
+          console.log("Get");
+          console.log(this.duration);
 
           if(this.flag == 2){
             this.$nextTick(()=>{

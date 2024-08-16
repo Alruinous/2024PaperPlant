@@ -71,7 +71,7 @@ class BlankQuestion(BaseQuestion):
     CorrectAnswer=models.TextField(max_length=100,null=True)
 
 class ChoiceQuestion(BaseQuestion):
-    MaxSelectable = models.IntegerField(default=1,null=True)
+    MaxSelectable = models.IntegerField(default=1,null=True)    #多选题的最多可选项
     OptionCnt=models.IntegerField(default=0)
 
 class ChoiceOption(models.Model):
