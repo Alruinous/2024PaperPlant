@@ -152,78 +152,77 @@ class UserRewardRecord(models.Model):
     Zhibi = models.IntegerField()
     RedemptionDate = models.DateField()
 
-'''
-#Submission状态变化时更新SurveyStatistice和自动打分
-@receiver(pre_save, sender=Submission)
-def update_survey_statistic_on_submission_status_change(sender, instance, **kwargs):
-    try:
-        old_instance = Submission.objects.get(pk=instance.SubmissionID)
-    except Submission.DoesNotExist:
-        return  # New record, skip
 
-    if old_instance.Status == 'Unsubmitted' and instance.Status == 'Submitted':
-        survey_statistic = instance.Survey.statistics
-        survey_statistic.TotalResponses += 1
-        survey_statistic.LastResponseDate = now()
-        survey_statistic.save(update_fields=['TotalResponses', 'LastResponseDate'])
+# #Submission状态变化时更新SurveyStatistice和自动打分
+# @receiver(pre_save, sender=Submission)
+# def update_survey_statistic_on_submission_status_change(sender, instance, **kwargs):
+#     try:
+#         old_instance = Submission.objects.get(pk=instance.SubmissionID)
+#     except Submission.DoesNotExist:
+#         return  # New record, skip
+
+#     if old_instance.Status == 'Unsubmitted' and instance.Status == 'Submitted':
+#         survey_statistic = instance.Survey.statistics
+#         survey_statistic.TotalResponses += 1
+#         survey_statistic.LastResponseDate = now()
+#         survey_statistic.save(update_fields=['TotalResponses', 'LastResponseDate'])
         
-        if old_instance.Survey.Category == 3: #考试问卷自动打分并创建平均分
-            total_score = 0
-            for blank_answer in instance.blank_answers.all():
-                if blank_answer.Content.strip() == blank_answer.Question.CorrectAnswer.strip(): #可以移除头尾多余空格
-                    total_score += blank_answer.Question.Score
-            for choice_answer in instance.choice_answers.all():
-                correct_options = choice_answer.Question.choice_options.filter(IsCorrect=True)
-                selected_options = ChoiceAnswer.objects.filter(Question=choice_answer.Question, Submission=instance)
-                if set(selected_options.values_list('ChoiceOptions', flat=True)) == set(correct_options.values_list('OptionID', flat=True)):
-                    total_score += choice_answer.Question.Score
+#         if old_instance.Survey.Category == 3: #考试问卷自动打分并创建平均分
+#             total_score = 0
+#             for blank_answer in instance.blank_answers.all():
+#                 if blank_answer.Content.strip() == blank_answer.Question.CorrectAnswer.strip(): #可以移除头尾多余空格
+#                     total_score += blank_answer.Question.Score
+#             for choice_answer in instance.choice_answers.all():
+#                 correct_options = choice_answer.Question.choice_options.filter(IsCorrect=True)
+#                 selected_options = ChoiceAnswer.objects.filter(Question=choice_answer.Question, Submission=instance)
+#                 if set(selected_options.values_list('ChoiceOptions', flat=True)) == set(correct_options.values_list('OptionID', flat=True)):
+#                     total_score += choice_answer.Question.Score
             
-            instance.Score = total_score
-            instance.Status = 'Graded'
-            instance.save(update_fields=['Score', 'Status'])
+#             instance.Score = total_score
+#             instance.Status = 'Graded'
+#             instance.save(update_fields=['Score', 'Status'])
             
-            new_average_score = (survey_statistic.AverageScore * (survey_statistic.TotalResponses - 1) + instance.Score) / survey_statistic.TotalResponses
-            survey_statistic.AverageScore = new_average_score
-            survey_statistic.save(update_fields=['AverageScore'])
+#             new_average_score = (survey_statistic.AverageScore * (survey_statistic.TotalResponses - 1) + instance.Score) / survey_statistic.TotalResponses
+#             survey_statistic.AverageScore = new_average_score
+#             survey_statistic.save(update_fields=['AverageScore'])
 
-#UserRewardRecord创建时同步Zhibi字段
-@receiver(post_save, sender=UserRewardRecord)
-def synchronize_zhibi_on_user_reward_record_creation(sender, instance, created, **kwargs):
-    if created:
-        rewardOffering=instance.RewardOffering
-        rewardOffering.AvailableQuota=rewardOffering.AvailableQuota - 1
-        rewardOffering.save(update_fields=['AvailableQuota'])
-        instance.Zhibi = rewardOffering.Zhibi
-        instance.RedemptionDate = now()
-        instance.save(update_fields=['Zhibi', 'RedemptionDate'])
-        instance.Respondent.Zhibi += instance.Zhibi
-        instance.Respondent.save(update_fields=['Zhibi'])
+# #UserRewardRecord创建时同步Zhibi字段
+# @receiver(post_save, sender=UserRewardRecord)
+# def synchronize_zhibi_on_user_reward_record_creation(sender, instance, created, **kwargs):
+#     if created:
+#         rewardOffering=instance.RewardOffering
+#         rewardOffering.AvailableQuota=rewardOffering.AvailableQuota - 1
+#         rewardOffering.save(update_fields=['AvailableQuota'])
+#         instance.Zhibi = rewardOffering.Zhibi
+#         instance.RedemptionDate = now()
+#         instance.save(update_fields=['Zhibi', 'RedemptionDate'])
+#         instance.Respondent.Zhibi += instance.Zhibi
+#         instance.Respondent.save(update_fields=['Zhibi'])
 
-#Survey状态变化时更新PublishDate和计算总分
-@receiver(pre_save, sender=Survey)
-def handle_survey_release_and_calculate_totalscore(sender, instance, **kwargs):
-    try:
-        old_instance = Survey.objects.get(pk=instance.SurveyID)
-    except Survey.DoesNotExist:
-        return  # New record, skip
+# #Survey状态变化时更新PublishDate和计算总分
+# @receiver(pre_save, sender=Survey)
+# def handle_survey_release_and_calculate_totalscore(sender, instance, **kwargs):
+#     try:
+#         old_instance = Survey.objects.get(pk=instance.SurveyID)
+#     except Survey.DoesNotExist:
+#         return  # New record, skip
 
-    if old_instance.Is_released == False and instance.Is_released == True:
-        # Update PublishDate to current time
-        instance.PublishDate = now()
+#     if old_instance.Is_released == False and instance.Is_released == True:
+#         # Update PublishDate to current time
+#         instance.PublishDate = now()
         
-        # Calculate TotalScore by summing up scores of related BlankQuestion and ChoiceQuestion
-        total_score = (
-            instance.blankquestion_questions.filter(Score__isnull=False).aggregate(score_sum=Sum('Score'))['score_sum'] or 0
-            + instance.choicequestion_questions.filter(Score__isnull=False).aggregate(score_sum=Sum('Score'))['score_sum'] or 0
-        )
-        instance.TotalScore = total_score
+#         # Calculate TotalScore by summing up scores of related BlankQuestion and ChoiceQuestion
+#         total_score = (
+#             instance.blankquestion_questions.filter(Score__isnull=False).aggregate(score_sum=Sum('Score'))['score_sum'] or 0
+#             + instance.choicequestion_questions.filter(Score__isnull=False).aggregate(score_sum=Sum('Score'))['score_sum'] or 0
+#         )
+#         instance.TotalScore = total_score
         
-        # Save with updated PublishDate and TotalScore
-        instance.save(update_fields=['PublishDate', 'TotalScore'])
+#         # Save with updated PublishDate and TotalScore
+#         instance.save(update_fields=['PublishDate', 'TotalScore'])
 
-#创建Survey时自动创建对应Statistic表
-@receiver(post_save, sender=Survey)
-def create_survey_statistic(sender, instance, created, **kwargs):
-    if created:  # Only create SurveyStatistic when a new Survey is created
-        SurveyStatistic.objects.create(Survey=instance)
-'''
+# #创建Survey时自动创建对应Statistic表
+# @receiver(post_save, sender=Survey)
+# def create_survey_statistic(sender, instance, created, **kwargs):
+#     if created:  # Only create SurveyStatistic when a new Survey is created
+#         SurveyStatistic.objects.create(Survey=instance)
