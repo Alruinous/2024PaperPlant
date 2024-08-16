@@ -60,7 +60,7 @@
             <van-checkbox-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt"  checked-color="#0283EF" :disabled="flag">
                 <br/>
                 <van-checkbox :name="questionList[index-1].optionList[index2-1].optionId" shape="square" :label-disabled=true>
-                    <div>
+                    <div  :disabled="true">
                       {{ questionList[index-1].optionList[index2-1].content }}
                     </div>
                 </van-checkbox>
