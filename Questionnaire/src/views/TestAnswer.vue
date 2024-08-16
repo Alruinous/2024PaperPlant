@@ -139,26 +139,36 @@
       isCorrect(index, index2) {
         //单选
         if(this.questionListFill[index].type == 1) {
-          let answerOption = 0;
-          this.questionListFill[index].optionList.forEach((option, i) => {
-            if(option.isCorrect == true) {
-              answerOption = i;
-            }
-          });
-          if(index2 == answerOption)
+          // let answerOption = 0;
+          // this.questionListFill[index].optionList.forEach((option, i) => {
+          //   if(option.isCorrect == true) {
+          //     answerOption = option.optionId;
+          //   }
+          // });
+          // if(this.questionListFill[index].Answer == answerOption)
+          //   return true;
+          // else return false;
+
+          if(this.questionListFill[index].optionList[index2].isCorrect == true)
             return true;
           else return false;
         }
         
         //多选
         if(this.questionListFill[index].type == 2) {
-          let answerOption = [];
-          this.questionListFill[index].optionList.forEach((option, i) => {
-            if(option.isCorrect == true) {
-              answerOption.push(i);
-            }
-          });
-          if(answerOption.includes(index2))
+          // let answerOption = [];
+          // this.questionListFill[index].optionList.forEach((option, i) => {
+          //   if(option.isCorrect == true) {
+          //     answerOption.push(option.optionId);
+          //   }
+          // });
+
+          // //下面这几行可能和上面不匹配，下面用的index上面用的Id
+          // if(answerOption.includes(index2))
+          //   return true;
+          // else return false;
+
+          if(this.questionListFill[index].optionList[index2].isCorrect == true)
             return true;
           else return false;
         }
@@ -167,19 +177,19 @@
       isSelected(index, index2) {
         //单选
         if(this.questionListFill[index].type == 1) {
-          if(this.questionListFill[index].Answer == index2)
+          if(this.questionListFill[index].Answer == this.questionListFill[index].optionList[index2].optionId)
             return true;
           else return false;
         }
         //多选
         if(this.questionListFill[index].type == 2) {
-          if(this.questionListFill[index].Answer.includes(index2))
+          if(this.questionListFill[index].Answer.includes(this.questionListFill[index].optionList[index2].optionId))
             return true;
           else return false;
         }
 
       },
-      // 我是否选对
+      // 我是否选对  (好像没有用了)
       isSelectedCorrectOption(index, index2) {
         //单选
         if(this.questionListFill[index].type == 1) {
@@ -207,6 +217,7 @@
           return false;
         }   
       },
+
       getTextColor(index, index2) {
         //判断是否做了，如果没做，Answer is -1
         if(this.questionListFill[index].type == 1) {
@@ -222,7 +233,7 @@
         if(this.isCorrect(index, index2))
           return {color: 'green'};
         else if(this.isSelected(index, index2)) {
-          if(this.isSelectedCorrectOption(index, index2))
+          if(this.isCorrect(index, index2))
             return {color: 'green'};
           else return {color: 'red'};
         }
@@ -233,14 +244,14 @@
           this.questionCnt++;
           this.questionListFill.push({"type":1,"isNecessary":true,"question":"请选择一个选项",
           "optionCnt":4,"optionList":[{"optionId":0,"content":"选项", "isCorrect":true},{"optionId":1,"content":"选项","isCorrect":false},{"optionId":2,"content":"选项","isCorrect":false},{"optionId":3,"content":"选项","isCorrect":false}],
-        "Answer":1});
+        "Answer":1}); //Answer中存的是选项这个类的全局Id，不是第几个选项
       },
       //TieZhu:添加多选题
       addMultiple(){
           this.questionCnt++;
           this.questionListFill.push({"type":2,"isNecessary":true,"question":"请选择以下选项（多选）",
           "optionCnt":4,"optionList":[{"optionId":0,"content":"选项","isCorrect":true},{"optionId":1,"content":"选项","isCorrect":true},{"optionId":2,"content":"选项","isCorrect":false},{"optionId":3,"content":"选项","isCorrect":false}],
-        "Answer":[1,2]});
+        "Answer":[1,2]}); //Answer中存的是选项这个类的全局Id，不是第几个选项
       },
       //TieZhu:添加填空题
       addFill(){
