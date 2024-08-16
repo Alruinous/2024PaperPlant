@@ -255,7 +255,7 @@ class GetStoreFillView(APIView):
         Description=survey.Description
         category=survey.Category
         TimeLimit=survey.TimeLimit
-        people=survey.QuotaLimit
+        #people=survey.QuotaLimit
 
         '''1.以下部分与问卷编辑界面的get函数类似，拿到题干'''
         '''2.拿到当前submissionID对应填写记录'''
@@ -331,13 +331,13 @@ class GetStoreFillView(APIView):
 
         #submissionID=-2时,只传回问卷题干
         if submissionID=="-2":
-            data={'Title':survey.Title,'category':survey.Category,'people':survey.QuotaLimit,'TimeLimit':survey.TimeLimit,
+            data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
               'description':survey.Description,'duration':duration}
             return JsonResponse(data)
 
         #传回题干和填写记录
         else:
-            data={'Title':survey.Title,'category':survey.Category,'people':survey.QuotaLimit,'TimeLimit':survey.TimeLimit,
+            data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
               'description':survey.Description,'questionList':questionList,'duration':duration, 'submissionID':submissionID}
             return JsonResponse(data)
         
@@ -346,7 +346,7 @@ class GetStoreFillView(APIView):
 def get_submission(request):
     if(request.method=='POST'):
         try:
-            print("lorian")
+            print("start get_submission")
             body=json.loads(request.body)
             surveyID=body['surveyID']    #问卷id
             status=body['status']  #填写记录状态
@@ -406,7 +406,7 @@ def get_submission(request):
                 answer=submissionItem['value']        #用户填写的答案
                 category=submissionItem['category']     #问题类型（用于后续区分，解决不同种类问题的QuestionID会重复的问题）
 
-
+                #print(category)
                 #question = BaseQuestion.objects.get(QuestionID=questionID).select_subclasses()   #联合查询
 
                 '''
@@ -450,6 +450,14 @@ def get_submission(request):
                     choiceAnswer=ChoiceAnswer.objects.create(Question=question,Submission=submission,ChoiceOptions=option)
                     choiceAnswer.save()
 
+                    #若已提交，报名问卷的必填选择题中，选择的对应选项-1
+                    if status=='Submitted' and survey.Category==2 and question.IsRequired==True:
+                        if option.MaxSelectablePeople<=0:
+                            data={'message':'People exceeds'}
+                            return JsonResponse(data)
+                        else:
+                            option.MaxSelectablePeople-=1
+
                 elif question.Category==2:     #多选题：Answer为选项ID的数组
                     #为每个用户选择的选项，创建一条ChoiceAnswer记录
                     for optionID in answer:
@@ -467,6 +475,19 @@ def get_submission(request):
                     print(answer)
                     ratingAnswer=RatingAnswer.objects.create(Question=question,Submission=submission,Rate=answer)
                     ratingAnswer.save()
+
+                #若已提交，报名问卷的必填选择题中，选择的对应选项-1
+                if status=='Submitted':
+                    #该问卷所有必填选择题(一定有人数限制)
+                    choiceQuestion_query=ChoiceQuestion.objects.filter(Survey=survey,Category__in=[1,2])
+                    if not choiceQuestion_query.exists():
+                        return HttpResponse(content="Choice questions not found",status=404)
+                    
+                    #该必填选择题的当前填写记录内容
+                    choiceAnswer=ChoiceAnswer.objects.filter(Question=question,Submission=submission)
+                    for choiceQuestion in choiceQuestion_query:
+                        choiceOption_query=ChoiceOption.objects.filter(Question=question)
+
                 
         except json.JSONDecodeError:  
             return JsonResponse({'error': 'Invalid JSON body'}, status=400)
@@ -488,7 +509,7 @@ class GetQuestionnaireView(APIView):
             return HttpResponse(content='Questionnaire not found', status=400) 
         title=survey.Title
         catecory=survey.Category
-        people=survey.QuotaLimit
+        #people=survey.QuotaLimit
         TimeLimit=survey.TimeLimit
 
         '''
@@ -517,7 +538,8 @@ class GetQuestionnaireView(APIView):
                 #将所有选项顺序排列
                 options_query=ChoiceOption.objects.filter(Question=question["QuestionID"]).order_by('OptionNumber')
                 for option in options_query:
-                    optionList.append({'content':option.Text,'optionNumber':option.OptionNumber,'isCorrect':option.IsCorrect,'optionID':option.OptionID})
+                    optionList.append({'content':option.Text,'optionNumber':option.OptionNumber,'isCorrect':option.IsCorrect,
+                                       'optionID':option.OptionID,'MaxSelectablePeople':option.MaxSelectablePeople})
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'optionCnt':question["OptionCnt"],
                                      'optionList':optionList})
@@ -532,7 +554,7 @@ class GetQuestionnaireView(APIView):
                                      'isNecessary':question["IsRequired"],'score':question["Score"]})
 
         
-        data={'Title':survey.Title,'category':survey.Category,'people':survey.QuotaLimit,'TimeLimit':survey.TimeLimit,
+        data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
               'description':survey.Description,'questionList':questionList}
         
         return JsonResponse(data, status=200)
@@ -547,7 +569,7 @@ def save_qs_design(request):
             title=body['title']  #问卷标题
             catecory=body['category']   #问卷类型（普通0、投票1、报名2、考试3）
             isOrder=body['isOrder'] #是否顺序展示（考试问卷）
-            people=body['people']   #报名人数（报名问卷）
+            #people=body['people']   #报名人数（报名问卷）
             timelimit=body['timeLimit']
             username=body['userName']   #创建者用户名
             description=body['description'] #问卷描述
@@ -558,15 +580,16 @@ def save_qs_design(request):
             user=User.objects.get(username=username)
             if user is None:        
                 return HttpResponse(content='User not found', status=400) 
+            
 
             #当前不存在该问卷，创建：
             if surveyID==-1:
                 survey=Survey.objects.create(Owner=user,Title=title,
                                              Description=description,Is_released=Is_released,
                                              Is_open=True,Is_deleted=False,Category=catecory,
-                                             TotalScore=0,TimeLimit=timelimit,IsOrder=isOrder,QuotaLimit=people
+                                             TotalScore=0,TimeLimit=timelimit,IsOrder=isOrder
                                             )
-                survey.QuotaLimit=people
+                #survey.QuotaLimit=people
             #已有该问卷的编辑记录
             else:
                 survey=Survey.objects.get(SurveyID=surveyID)
@@ -579,7 +602,7 @@ def save_qs_design(request):
                 survey.Category=catecory
                 survey.TimeLimit=timelimit
                 survey.IsOrder=isOrder
-                survey.QuotaLimit=people    #该问卷的报名人数
+                #survey.QuotaLimit=people    #该问卷的报名人数
                 survey.save()
 
                 #该问卷的所有选择题
@@ -613,8 +636,8 @@ def save_qs_design(request):
                     #所有选项:
                     jdex=1
                     for option in optionList:
-                        option=ChoiceOption.objects.create(Question=question,Text=option["content"],
-                                                               IsCorrect=option["isCorrect"],OptionNumber=jdex)
+                        option=ChoiceOption.objects.create(Question=question,Text=option["content"],IsCorrect=option["isCorrect"],
+                                                           OptionNumber=jdex,MaxSelectablePeople=option['MaxSelectablePeople'])
                         option.save()
                         jdex=jdex+1
                 
@@ -833,12 +856,31 @@ def check_qs(request,username,questionnaireId,type):
     
     #报名问卷：超过人数，不可以再报名
     elif qs.Category==2:
-        #检查是否超人数
+        #检查是否超人数(检查每个必填选择题的所有选项，是否都超人数)
         submission_query=Submission.objects.filter(Respondent=user,Survey=qs)
+
+        choiceQuestion_query=ChoiceQuestion.objects.filter(Survey=qs,Category__in=[1,2],IsRequired=True)
+        if choiceQuestion_query.exists():
+            #每个必填选项
+            for choiceQuestion in choiceQuestion_query:
+                isFull=True
+                choiceOption_query=ChoiceOption.objects.filter(Question=choiceQuestion)
+                #每个选项的剩余人数
+                for choiceOption in choiceOption_query:
+                    if choiceOption.MaxSelectablePeople>0:
+                        isFull=False
+                
+                if isFull==True:
+                    data={'message':False,"content":"当前报名人数已满"}
+                    return JsonResponse(data)
+
+        '''
         currentCnt=Submission.objects.filter(Respondent=user,Survey=qs).count()
+
         if currentCnt>=qs.QuotaLimit:
             data={'message':False,"content":"当前报名人数已满"}
             return JsonResponse(data)
+        '''
 
         #检查是否有未提交的填写记录
         unsubmitted_query=Submission.objects.filter(Respondent=user,Survey=qs,Status="Unsubmitted")

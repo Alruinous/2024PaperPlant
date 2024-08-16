@@ -53,7 +53,7 @@ class Survey(models.Model):
     TotalScore = models.IntegerField(null=True, blank=True)
     TimeLimit = models.IntegerField(null=True, blank=True)
     IsOrder = models.BooleanField(default=True)
-    QuotaLimit = models.IntegerField(null=True, default=False)
+    #QuotaLimit = models.IntegerField(null=True, default=False)
 
 class BaseQuestion(models.Model):
     QuestionID = models.AutoField(primary_key=True)
@@ -80,6 +80,9 @@ class ChoiceOption(models.Model):
     Text = models.CharField(max_length=200)
     IsCorrect = models.BooleanField(default=False,null=True)
     OptionNumber=models.IntegerField(null=False,default=0)
+
+    #报名问卷：每个选项的剩余人数(-1代表无人数限制)
+    MaxSelectablePeople=models.IntegerField(null=False,default=-1)
     
 class OtherOption(models.Model):
     IsRequired = models.BooleanField(default=True)
