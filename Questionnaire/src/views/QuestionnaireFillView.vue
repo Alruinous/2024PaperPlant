@@ -127,7 +127,6 @@
         questionList: [],
         title:'问题标题',
         isDisorder:false,
-        people:0, //剩余人数
         timeLimit:5,
         time:0, //存储在此页面停留的时间
         intervalId:null, //存储定时器的ID
@@ -191,7 +190,7 @@
           
           let i = 0;
           for(i;i < this.questionList.length;i++){
-            this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer});
+            this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer ,"category":this.questionList[i].type});
           }
 
           if(status == 0){
@@ -332,7 +331,6 @@
 
           this.title = result.Title;
           this.type = result.category;
-          this.people = result.people;
           this.timeLimit = result.TimeLimit;
           this.questionList = result.questionList;
           this.duration = result.duration;
@@ -350,11 +348,11 @@
             })
           }
 
-          if(this.type == 2 && this.people == 0){
-            this.warning("报名人数已满！")
-            this.$router.push({path:'/userManage/filled'});
-            return;
-          }
+          // if(this.type == 2 && this.people == 0){
+          //   this.warning("报名人数已满！")
+          //   this.$router.push({path:'/userManage/filled'});
+          //   return;
+          // }
 
           if(this.type == 3){
             let totalSeconds = this.timeLimit * 60 - this.duration;
