@@ -239,7 +239,7 @@
       addMultiple(){
           this.questionCnt++;
           this.questionListFill.push({"type":2,"isNecessary":true,"question":"请选择以下选项（多选）",
-          "optionCnt":4,"optionList":[{"optionId":0,"content":"选项","isCorrect":true},{"optionId":0,"content":"选项","isCorrect":true},{"optionId":0,"content":"选项","isCorrect":false},{"optionId":0,"content":"选项","isCorrect":false}],
+          "optionCnt":4,"optionList":[{"optionId":0,"content":"选项","isCorrect":true},{"optionId":1,"content":"选项","isCorrect":true},{"optionId":2,"content":"选项","isCorrect":false},{"optionId":3,"content":"选项","isCorrect":false}],
         "Answer":[1,2]});
       },
       //TieZhu:添加填空题
@@ -257,8 +257,11 @@
           this.description = result.description;
           this.score = result.score;
           this.questionCnt = this.questionListFill.length;
+
+          this.addMultiple();
         })
-        console.log(this.score)
+        
+        // console.log(this.score)
         console.log(this.questionListFill)
         // console.log(questionListFill[0])
       },
@@ -273,9 +276,9 @@
     NavigationBar,
     },
     mounted(){
-      this.addSingle();
-      this.addMultiple();
-      this.addFill();
+      // this.addSingle();
+      // this.addMultiple();
+      // this.addFill();
     },
     beforeUnmount(){
       if(this.intervalId){

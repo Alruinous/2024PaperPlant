@@ -119,7 +119,7 @@ def display_answer_normal(request,username,questionnaireId,submissionId):
 #考试问卷的展示界面：
 def display_answer_test(request,username,questionnaireId,submissionId):
     print("start display_answer_test")
-    print(submissionId)
+    # print(submissionId)
     user=User.objects.get(username=username)
     if user is None:
         return HttpResponse(content='User not found', status=404) 
@@ -204,7 +204,7 @@ def display_answer_test(request,username,questionnaireId,submissionId):
 
 
     data={'Title':survey.Title,'description':survey.Description,'questionList':questionList,'score':score}
-    print(questionList[0])
+    # print(questionList[0])
     return JsonResponse(data)
 
 

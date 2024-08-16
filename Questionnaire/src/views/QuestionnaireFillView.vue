@@ -319,7 +319,7 @@
       this.flag = this.$route.query.flag;
 
       if(this.flag == 2) {
-        this.submissionId = -1; //GetStoreFill 只返回题干
+        this.submissionId = -2; //GetStoreFill 只返回题干
       }
 
       
