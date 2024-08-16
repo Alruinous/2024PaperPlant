@@ -195,12 +195,6 @@
           }
 
           if(status == 0){
-<<<<<<< HEAD
-=======
-            // console.log(this.question);
-            console.log("Send");
-            console.log(this.duration);
->>>>>>> b6f589b57c1c636da9caab839cf66c80d9c46be7
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
           }
