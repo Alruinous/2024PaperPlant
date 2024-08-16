@@ -34,19 +34,17 @@ export function PostFill(surveyID,status,question,duration,submissionId,username
     return post('/questionnaireFill',data);
 }
 //传回问卷信息
-export function PostQuestion(surveyID,title,category,isOrder,people,timeLimit,questionList,description,userName,Is_released){
+export function PostQuestion(surveyID,title,category,isOrder,timeLimit,questionList,description,userName,Is_released){
     let data = {};
     data.surveyID = surveyID;
     data.title = title;
     data.category = category;
     data.isOrder = isOrder;
-    data.people = people;
     data.timeLimit = timeLimit;
     data.questionList = questionList;
     data.userName=userName;         //创建者用户名
     data.description=description;   //问卷描述
     data.Is_released = Is_released;
-    console.log(questionList);
     return post('/questionnaireDesign',data);
 }
 //下载excel表格

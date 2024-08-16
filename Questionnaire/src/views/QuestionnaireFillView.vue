@@ -9,10 +9,7 @@
         <div>{{ description }}</div>
         <van-divider  :style="{ color: '#626aef', borderColor: '#626aef', padding: '0 16px' }"></van-divider>
         <div v-if="type==3" id="time" class="time"></div>
-        <div v-if="type==2" class="time">
-          剩余人数:{{ people }}
-        </div>
-        <van-divider v-if="type==2 || type==3"  :style="{ color: '#626aef', borderColor: '#626aef', padding: '0 15px' }"></van-divider>
+        <van-divider v-if="type==3"  :style="{ color: '#626aef', borderColor: '#626aef', padding: '0 15px' }"></van-divider>
         <div v-for="index in questionList.length">
   
           <!-- TieZhu:
@@ -127,7 +124,6 @@
         questionList: [],
         title:'问题标题',
         isDisorder:false,
-        people:0, //剩余人数
         timeLimit:5,
         time:0, //存储在此页面停留的时间
         intervalId:null, //存储定时器的ID
@@ -191,7 +187,7 @@
           
           let i = 0;
           for(i;i < this.questionList.length;i++){
-            this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer});
+            this.question.push({"questionID":this.questionList[i].questionID, "question":this.questionList[i].question, "value":this.questionList[i].Answer ,"category":this.questionList[i].type});
           }
 
           if(status == 0){
@@ -268,7 +264,6 @@
             })
             this.$router.push({path:'/normalAnswer',query:{questionnaireID:this.questionnaireId, submissionID:this.submissionId}}); 
           }
-          // this.$router.push('/userManage');
         },
         warning(content){
           ElMessage({
@@ -332,7 +327,6 @@
 
           this.title = result.Title;
           this.type = result.category;
-          this.people = result.people;
           this.timeLimit = result.TimeLimit;
           this.questionList = result.questionList;
           this.duration = result.duration;
@@ -348,12 +342,6 @@
               this.$router.push({path:'/userManage/filled'});
               return;
             })
-          }
-
-          if(this.type == 2 && this.people == 0){
-            this.warning("报名人数已满！")
-            this.$router.push({path:'/userManage/filled'});
-            return;
           }
 
           if(this.type == 3){

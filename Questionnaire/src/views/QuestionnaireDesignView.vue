@@ -53,9 +53,6 @@
           <div v-if="type==3">
             限时&nbsp;<el-input-number v-model="timeLimit" size="small" :min="1" controls-position="right"/>&nbsp;min
           </div>
-          <div v-if="type==2">
-            <el-input-number v-model="people" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
-          </div>
         </div>
         <div class="row"></div>
         <div class = "post_button_container">
@@ -83,13 +80,15 @@
            @dragover.prevent: 阻止默认行为，使得元素可以被放置。
            @drop: 放置元素时触发，处理元素放置后的逻辑。
            @dragenter.prevent: 进入另一个可放置元素时触发，这里用来调整元素位置。 -->
-
+      <transition-group name="list" tag="div">
       <div v-for="index in questionList.length"
+      :class="{ 'dragging': draggedIndex === index - 1 }"
       draggable=true
       @dragstart="dragStart(index-1)"
       @dragover.prevent
       @drop="drop(index-1)"
       @dragenter.prevent="dragEnter(index-1)"
+      @dragend="dragEnd"
       >
 
         <!-- TieZhu:questionList说明
@@ -125,7 +124,7 @@
         <el-icon color="#c45656" style="position: absolute; left: 1%;font-size: 24px;" v-if="questionList[index-1].isNecessary==true"><StarFilled/>&ensp;</el-icon>
 
         <!-- TieZhu：单选题 -->
-        <div v-if="questionList[index-1].type==1" @click="showTB(index-1)" >
+        <div v-if="questionList[index-1].type==1" @mouseover="showTB(index-1)" >
           <div>
             &ensp;{{ index }}.&ensp;
             <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
@@ -136,12 +135,16 @@
             <div>
               <br/>
                 <van-radio :name="index2" checked-color="#0283EF" :label-disabled=true>
-                  <n-popover trigger="manual" :show="questionList[index-1].optionList[index2-1].isEditing" :show-arrow="false" placement="right">
+                  <n-popover 
+                  trigger="manual" 
+                  :show="questionList[index-1].optionList[index2-1].isEditing" 
+                  :show-arrow="false" 
+                  @blur="finishEditing(1,index-1,index2-1)" 
+                  placement="right">
                     <template #trigger>
                       <el-input 
                       v-if="questionList[index-1].optionList[index2-1].isEditing"
                       v-model="questionList[index-1].optionList[index2-1].content" 
-                      @blur="finishEditing(1,index-1,index2-1)" 
                       @keyup.enter="finishEditing(1,index-1,index2-1)"
                       />
                       <span v-else @click="startEditing(1,index-1,index2-1)" :class="{ 'correct-answer': questionList[index-1].optionList[index2-1].isCorrect }">{{ questionList[index-1].optionList[index2-1].text }}</span>
@@ -153,7 +156,9 @@
                       <el-tooltip content="正确答案" placement="right">
                         <el-switch v-if="type==3" v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(0,index-1,index2-1)"/>
                       </el-tooltip>
+                      <el-input-number v-if="type==2" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
                     </div>
+                    
                   </n-popover>
                 </van-radio>
               <br/>
@@ -164,7 +169,7 @@
         </div>
 
         <!-- TieZhu：多选题 -->
-        <div v-if="questionList[index-1].type==2" @click="showTB(index-1)" >
+        <div v-if="questionList[index-1].type==2" @mouseover="showTB(index-1)" >
           <div>
             &ensp;{{ index }}.&ensp;
             <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
@@ -175,12 +180,16 @@
             <div>
                 <br/>
                 <van-checkbox :name="index2" shape="square" :label-disabled=true>
-                  <n-popover trigger="manual" :show="questionList[index-1].optionList[index2-1].isEditing" :show-arrow="false" placement="right">
+                  <n-popover 
+                  trigger="manual" 
+                  :show="questionList[index-1].optionList[index2-1].isEditing" 
+                  :show-arrow="false" 
+                  @blur="finishEditing(1,index-1,index2-1)" 
+                  placement="right">
                     <template #trigger>
                       <el-input 
                       v-if="questionList[index-1].optionList[index2-1].isEditing"
                       v-model="questionList[index-1].optionList[index2-1].content" 
-                      @blur="finishEditing(1,index-1,index2-1)" 
                       @keyup.enter="finishEditing(1,index-1,index2-1)"
                       />
                       <span v-else @click="startEditing(1,index-1,index2-1)" :class="{ 'correct-answer': questionList[index-1].optionList[index2-1].isCorrect }">{{ questionList[index-1].optionList[index2-1].text }}</span>
@@ -191,6 +200,7 @@
                     <el-tooltip content="正确答案" placement="right">
                       <el-switch v-if="type==3" v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(1,index-1,index2-1)"/>
                     </el-tooltip>
+                    <el-input-number v-if="type==2" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
                   </n-popover>
                 </van-checkbox>
                 <br/>
@@ -199,7 +209,7 @@
         </div>
 
         <!-- TieZhu:填空题 -->
-        <div v-if="questionList[index-1].type==3" @click="showTB(index-1)">
+        <div v-if="questionList[index-1].type==3" @mouseover="showTB(index-1)">
           &ensp;{{ index }}.&ensp;
           <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
           <span v-else @click="startEditing(0,index-1,0)">{{ questionList[index-1].text }}</span>
@@ -211,7 +221,7 @@
         </div>
 
         <!-- TieZhu:评分题 -->
-        <div v-if="questionList[index-1].type==4" @click="showTB(index-1)">
+        <div v-if="questionList[index-1].type==4" @mouseover="showTB(index-1)">
           &ensp;{{ index }}.&ensp;
           <el-input v-if="questionList[index-1].qsIsEditing" v-model="questionList[index-1].question" @blur="finishEditing(0,index-1,0)" @keyup.enter="finishEditing(0,index-1,0)" clearable/>
           <span v-else @click="startEditing(0,index-1,0)">{{ questionList[index-1].text }}</span>
@@ -221,7 +231,7 @@
           <br/>
         </div>
         <!-- TieZhu:工具栏 -->
-        <div v-if="questionList[index-1].showToolbar">
+        <div v-if="questionList[index-1].showToolbar" style="background-color: white;">
           <el-divider content-position="left" border-style="dashed">
               <el-icon><MagicStick /></el-icon>
           </el-divider>
@@ -272,6 +282,7 @@
         </div>
 
       </div>
+      </transition-group>
 
     </div>
 
@@ -307,7 +318,6 @@ const router = useRouter();
       ttIsEditing:false,
       lastEditObj:{"type":-2,"index1":-1,"index2":-1},//上一次修改的元素，如果不是选项，那么它的index2为-1.type:-1问卷标题;0问题;1选项
       isDisorder:false,
-      people:0,
       description:'',
       timeLimit:0,
       description:'问卷描述',
@@ -323,7 +333,6 @@ const router = useRouter();
         this.questionnaireId,
         this.type,
         this.questionList,
-        this.people,
         this.isDisorder,
         this.title,
         0
@@ -349,7 +358,6 @@ const router = useRouter();
         this.questionnaireId,
         this.type,
         this.questionList,
-        this.people,
         this.isDisorder,
         this.title,
         1
@@ -376,14 +384,14 @@ const router = useRouter();
       this.questionCnt++;
       this.questionList.push({"type":1,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择一个选项","text":"请选择一个选项",
       "optionCnt":1,"isDisabled":true,"score":0,
-      "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":ref(false)}]});
+      "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":ref(false),"MaxSelectablePeople":ref(-1)}]});
     },
     //TieZhu:添加多选题
     addMultiple(){
       this.questionCnt++;
       this.questionList.push({"type":2,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择以下选项（多选）","text":"请选择以下选项（多选）",
       "optionCnt":1,"isDisabled":true,"max":1,"score":0,
-      "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false}]});
+      "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false,"MaxSelectablePeople":ref(-1)}]});
     },
     //TieZhu:添加填空题
     addFill(){
@@ -418,6 +426,9 @@ const router = useRouter();
     dragStart(index){
       this.draggedIndex = index;
     },
+    dragEnd() {
+      this.draggedIndex = -1;
+    },
     dragEnter(index){
       if(index != this.draggedIndex){
         const itemToMove = this.questionList[this.draggedIndex];
@@ -433,7 +444,7 @@ const router = useRouter();
     //选择题
     addOption(index,index2){
       this.questionList[index].optionCnt++;
-      this.questionList[index].optionList.splice(index2+1,0,{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false});
+      this.questionList[index].optionList.splice(index2+1,0,{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false,"MaxSelectablePeople":ref(-1)});
       if(this.questionList[index].optionCnt==2){
           this.questionList[index].isDisabled = false;
       }
@@ -445,7 +456,7 @@ const router = useRouter();
         this.questionList[index].isDisabled = true;
       }
     },
-      //EditText
+    //EditText
     startEditing(type,index,index2) {
       if(this.lastEditObj.type!=-2 && (index != this.lastEditObj.index1 || index2 != this.lastEditObj.index2)){
         this.finishEditing(this.lastEditObj.type,this.lastEditObj.index1,this.lastEditObj.index2);
@@ -563,7 +574,7 @@ const router = useRouter();
       if(this.flag==1){
         this.questionnaireId = -1;
       }
-      var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.people,this.timeLimit,this.questionList,this.description ,this.username,false);
+      var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,false);
       this.$router.push({path:'/userManage/filled'});
       this.success("保存成功");
     },
@@ -572,7 +583,7 @@ const router = useRouter();
       if(this.flag==1){
         this.questionnaireId = -1;
       }
-      var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.people,this.timeLimit,this.questionList,this.description ,this.username,true);
+      var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,true);
       this.$router.push({path:'/userManage/filled'});
       this.success("发布成功");
     }
@@ -596,13 +607,11 @@ const router = useRouter();
         this.title = result.Title;
         this.text = this.title;
         this.type = result.category;
-        this.people = result.people;
         this.timeLimit = result.TimeLimit;
         this.questionList = result.questionList;
         this.description = result.description;
         this.destext = this.description;
         this.isDisorder = result.isOrder;
-        console.log(this.questionList);
         let i = 0,j = 0;
         for(i = 0;i < this.questionList.length;i++){
           this.questionList[i].showToolbar = false;
@@ -615,9 +624,6 @@ const router = useRouter();
             this.questionList[i].optionList[j].text = this.questionList[i].optionList[j].content;
             this.questionList[i].optionList[j].isEditing = false;
             }
-          }
-          else{
-            this.questionList[i].correctAnswer = "";
           }
         }
       })
@@ -697,4 +703,11 @@ const router = useRouter();
   position: relative;
   /* margin-bottom: 10%; */
 }
+.dragging {
+  color:#F4F6F7;
+}
+.list-move {
+  transition: transform 0.15s ease; /* 控制平滑移动的过渡效果 */
+}
+
 </style>

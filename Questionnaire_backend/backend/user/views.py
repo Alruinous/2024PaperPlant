@@ -545,7 +545,7 @@ class GetQuestionnaireView(APIView):
                                      'optionList':optionList})
                 
             elif question["Category"]==3:                  #填空题
-                
+                print(question)
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'correctAnswer':question["CorrectAnswer"]})
 
@@ -576,7 +576,7 @@ def save_qs_design(request):
             Is_released=body['Is_released'] #保存/发布
 
             questionList=body['questionList']   #问卷题目列表
-            print(questionList)
+            # print(questionList)
             user=User.objects.get(username=username)
             if user is None:        
                 return HttpResponse(content='User not found', status=400) 
@@ -630,8 +630,8 @@ def save_qs_design(request):
                     optionList=question['optionList']
 
                     question=ChoiceQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
-                                                               QuestionNumber=index,Score=question["score"],Category=question["type"],
-                                                               OptionCnt=question["optionCnt"])
+                                                                QuestionNumber=index,Score=question["score"],Category=question["type"],
+                                                                OptionCnt=question["optionCnt"])
                     question.save()
                     #所有选项:
                     jdex=1
@@ -642,10 +642,11 @@ def save_qs_design(request):
                         jdex=jdex+1
                 
                 elif question["type"]==3:                          #填空
+                    # print(question)
                     question=BlankQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
-                                                              Score=question["score"],QuestionNumber=index,Category=question["type"],
-                                                              CorrectAnswer=question["correctAnswer"])
-                    question.save()
+                                                        Score=question["score"],QuestionNumber=index,Category=question["type"],
+                                                            CorrectAnswer=question["correctAnswer"])
+                    question.save()  
                 
                 else:                                           #评分题
                     question=RatingQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
