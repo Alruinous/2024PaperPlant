@@ -52,8 +52,8 @@
             <span class="little-title" style="margin-top: 0;">Contact Us</span>
             <img src="../assets/aboutus/g.jpg">
             <span class="text">如果您有任何疑问、建议或反馈，请随时联系我们。您可以通过以下方式与我们取得联系：</span>
-            <span class="special-text">电子邮件：<a href="#">contact@yourwebsite.com</a></span>
-            <span class="special-text">社交媒体：<a href="#">Twitter</a> | <a href="#">Facebook</a></span>
+            <span class="special-text">电子邮件：<a href="https://www.happymeatfarms.com/" target="_blank">contact@yourwebsite.com</a></span>
+            <span class="special-text">社交媒体：<a href="https://www.youtube.com/watch?v=-VjsVxTLuD4" target="_blank">Twitter</a> | <a href="https://www.youtube.com/watch?v=lse2qQCGVRQ" target="_blank">Facebook</a></span>
             <span class="text">感谢您选择我们的服务！我们期待着与您一起创建和分享有意义的调查项目。</span>
         </div>
         <el-footer class="layout-container">

@@ -224,7 +224,8 @@ class GetStoreFillView(APIView):
         
         survey=Survey.objects.get(SurveyID=surveyID)
         if survey is None:
-            return HttpResponse(content='Questionnaire not found', status=404)   
+            return HttpResponse(content='Questionnaire not found', status=404) 
+          
         
         #从问卷广场界面进入：查找该用户是否有该问卷未提交的填写记录
         if submissionID=="-1":
@@ -328,9 +329,17 @@ class GetStoreFillView(APIView):
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'Answer':answer})
 
-        data={'Title':survey.Title,'category':survey.Category,'people':survey.QuotaLimit,'TimeLimit':survey.TimeLimit,
+        #submissionID=-2时,只传回问卷题干
+        if submissionID=="-2":
+            data={'Title':survey.Title,'category':survey.Category,'people':survey.QuotaLimit,'TimeLimit':survey.TimeLimit,
+              'description':survey.Description,'duration':duration}
+            return JsonResponse(data)
+
+        #传回题干和填写记录
+        else:
+            data={'Title':survey.Title,'category':survey.Category,'people':survey.QuotaLimit,'TimeLimit':survey.TimeLimit,
               'description':survey.Description,'questionList':questionList,'duration':duration, 'submissionID':submissionID}
-        return JsonResponse(data)
+            return JsonResponse(data)
         
 
 #问卷填写界面：从前端接收用户的填写记录(POST)
@@ -395,6 +404,8 @@ def get_submission(request):
                 print("TieZhu")
                 questionID=submissionItem["questionID"]     #问题ID
                 answer=submissionItem['value']        #用户填写的答案
+                category=submissionItem['category']     #问题类型（用于后续区分，解决不同种类问题的QuestionID会重复的问题）
+
 
                 #question = BaseQuestion.objects.get(QuestionID=questionID).select_subclasses()   #联合查询
 
@@ -410,15 +421,15 @@ def get_submission(request):
                 # print(question.Category)'''
 
                 questionNewList=[]
-                choiceQuestion_query=ChoiceQuestion.objects.filter(QuestionID=questionID)
+                choiceQuestion_query=ChoiceQuestion.objects.filter(QuestionID=questionID,Category=category)
                 if choiceQuestion_query.exists():
                     questionNewList.append(choiceQuestion_query.first())
 
-                blankQuestion_query=BlankQuestion.objects.filter(QuestionID=questionID)
+                blankQuestion_query=BlankQuestion.objects.filter(QuestionID=questionID,Category=category)
                 if blankQuestion_query.exists():
                     questionNewList.append(blankQuestion_query.first())
 
-                ratingQuestion_query=RatingQuestion.objects.filter(QuestionID=questionID)
+                ratingQuestion_query=RatingQuestion.objects.filter(QuestionID=questionID,Category=category)
                 if ratingQuestion_query.exists():
                     questionNewList.append(ratingQuestion_query.first())
                 
@@ -512,7 +523,7 @@ class GetQuestionnaireView(APIView):
                                      'optionList':optionList})
                 
             elif question["Category"]==3:                  #填空题
-                
+                print(question)
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'correctAnswer':question["CorrectAnswer"]})
 
@@ -543,7 +554,7 @@ def save_qs_design(request):
             Is_released=body['Is_released'] #保存/发布
 
             questionList=body['questionList']   #问卷题目列表
-            print(questionList)
+            # print(questionList)
             user=User.objects.get(username=username)
             if user is None:        
                 return HttpResponse(content='User not found', status=400) 
@@ -596,8 +607,8 @@ def save_qs_design(request):
                     optionList=question['optionList']
 
                     question=ChoiceQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
-                                                               QuestionNumber=index,Score=question["score"],Category=question["type"],
-                                                               OptionCnt=question["optionCnt"])
+                                                                QuestionNumber=index,Score=question["score"],Category=question["type"],
+                                                                OptionCnt=question["optionCnt"])
                     question.save()
                     #所有选项:
                     jdex=1
@@ -608,10 +619,11 @@ def save_qs_design(request):
                         jdex=jdex+1
                 
                 elif question["type"]==3:                          #填空
+                    # print(question)
                     question=BlankQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
-                                                              Score=question["score"],QuestionNumber=index,Category=question["type"],
-                                                              CorrectAnswer=question["correctAnswer"])
-                    question.save()
+                                                        Score=question["score"],QuestionNumber=index,Category=question["type"],
+                                                            CorrectAnswer=question["correctAnswer"])
+                    question.save()  
                 
                 else:                                           #评分题
                     question=RatingQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
