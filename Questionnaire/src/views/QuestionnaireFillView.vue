@@ -60,7 +60,7 @@
             
             <van-checkbox-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt"  checked-color="#0283EF" :disabled="flag">
                 <br/>
-                <van-checkbox :name="questionList[index-1].optionList[index2-1].optionId" shape="square" :label-disabled=true :disabled="questionList[index-1].optionList[index2-1].MaxSelectablePeople == 0">
+                <van-checkbox :name="questionList[index-1].optionList[index2-1].optionId" shape="square" :label-disabled=true :disabled="questionList[index-1].optionList[index2-1].MaxSelectablePeople == 0" @click="canSelect(index-1)">
                   <div>
                     <span>{{ questionList[index-1].optionList[index2-1].content }}</span>
                     <span v-if="type == 2 && questionList[index-1].isNecessary" style="color:#F8C471 ; font-weight:bold;">&ensp;[ 剩余人数：{{ questionList[index-1].optionList[index2-1].MaxSelectablePeople }} ]</span>
@@ -113,7 +113,7 @@
   import { GetStoreFill, PostFill } from "@/api/question";
   import NavigationBar from "@/components/NavigationBarInQuestionnaire.vue"
   import { ref } from 'vue'
-  import { ElMessage } from 'element-plus'
+  import { ElMessage,ElMessageBox } from 'element-plus'
   import {getCurrentInstance} from 'vue'
 
    export default({
@@ -136,6 +136,7 @@
         duration:60,//以秒为单位
         score:0,
         description:'问卷描述',
+        money: 0,
         // submisstionId:0,
         flag:0,//1是预览问卷,2是导出问卷
         question:[], //传给后端的时候用的
@@ -245,12 +246,20 @@
             promise = PostFill(this.questionnaireId,'Graded',this.question,this.duration,this.submissionId,this.username, this.score);
             promise.then((result)=>{
               this.submissionId = result.submissionId;
+              //计算zhibi
+              // if(result.message == "True") {
+              //   this.money += 50;
+              //   $cookies.set('money', this.money);
+              // }
+
               this.$router.push({path:'/testAnswer',query:{questionnaireId:this.questionnaireId,submissionId:this.submissionId,score:this.score}}); 
             })
             
           }
           else if(status == 1 && this.type == 1){
             this.success("投票成功");
+            console.log("QuestionFill");
+            console.log(this.questionnaireId);
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0,this.submissionId,this.username, 0);
             this.$router.push({path:'/dataPre',query:{questionnaireID:this.questionnaireId,flag:true}});
           }
@@ -303,6 +312,13 @@
           }
           return true;
         },
+        //检测是否超过最多选项
+        canSelect(index){
+          if(this.questionList[index].Answer.length > this.questionList[index].max){
+            ElMessageBox.alert("此题最多只能选择"+this.questionList[index].max+"项", '', {confirmButtonText: '确认'})
+            this.questionList[index].Answer.splice(-1);
+          }
+        }
      },
      components:{
       NavigationBar,
@@ -324,6 +340,7 @@
         const internalInstance = getCurrentInstance()
         const internalData = internalInstance.appContext.config.globalProperties
         this.username = internalData.$cookies.get('username') // 后面的为之前设置的cookies的名字
+        this.money = internalData.$cookies.get('money')
         promise = GetStoreFill(this.username,this.questionnaireId,this.submissionId);
         promise
         .then((result) => {
@@ -335,12 +352,6 @@
           this.duration = result.duration;
           this.description = result.description;
           this.submissionId = result.submissionID;
-          
-          console.log("Get Data");
-          console.log(this.duration);
-
-          console.log("Get");
-          console.log(this.duration);
 
           if(this.flag == 2){
             this.$nextTick(()=>{

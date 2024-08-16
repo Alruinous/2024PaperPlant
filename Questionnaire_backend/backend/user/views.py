@@ -1301,6 +1301,28 @@ def survey_statistics(request, surveyID):
         if not survey.exists():
             return JsonResponse({'error': 'Survey not found'}, status=404)
 
+
+        print("start survey_statistics")
+        print("lorian")
+        print(surveyID)
+        survey = Survey.objects.filter(SurveyID=surveyID).first()
+        print("lorian")
+        print(survey)
+        survey_stat = SurveyStatistic.objects.filter(Survey=survey).first()
+        print("lorian")
+        print(survey_stat)
+        #问卷基础信息
+        stats = {
+            'title': survey.Title,
+            'description': survey.Description,
+            'category': survey.Category,
+            'total_submissions': survey_stat.TotalResponses,
+            # 'max_participants': survey.QuotaLimit if survey.QuotaLimit else None,
+            'average_score': survey_stat.AverageScore,
+            'questionList': []
+        }
+        print("lorian")
+        
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
                                                     ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID','MaxSelectable').all(),
                                                     RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionID','QuestionNumber').all())
@@ -1359,3 +1381,85 @@ def survey_statistics(request, surveyID):
         data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
             'description':survey.Description,'questionList':questionList}
         return JsonResponse(data)
+                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
+                                                    RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())                              
+        # 将迭代器转换为列表  
+        questions = list(all_questionList_iterator)
+        questions.sort(key=lambda x: x['QuestionNumber']) 
+
+        print("lorian")
+        #题目信息
+        for q in questions:
+            if q["Category"] < 3:
+                question = ChoiceQuestion.objects.get(QuestionID=q["QuestionID"])
+            elif q["Category"] == 3:
+                question = BlankQuestion.objects.get(QuestionID=q["QuestionID"])
+            elif q["Category"] == 4:
+                question = RatingQuestion.objects.get(QuestionID=q["QuestionID"])
+            
+            q_stats = {
+                'type': question.Category,
+                'questionId': question.QuestionID,
+                'question': question.Text,
+                'number': question.QuestionNumber,
+                'is_required': question.IsRequired,
+                'score': question.Score if survey.Category == '3' else None,
+                'correct_answer': None,
+                'correct_count': 0,
+                'options_stats': [],
+                'rating_stats': [],
+                'blank_stats': []
+            }
+
+            print(q)
+    
+            #答案信息
+            if question.Category < 3:
+                for option in question.choice_options.all():
+                    option_stats = {
+                        'number': option.OptionNumber,
+                        'is_correct': option.IsCorrect,
+                        'optionContent': option.Text,
+                        'optionCnt': ChoiceAnswer.objects.filter(Question=question, ChoiceOptions=option).count()
+                    }
+                    q_stats['options_stats'].append(option_stats)
+                
+                correct_option_numbers = [option.Number for option in question.choice_options.filter(IsCorrect=True)]
+                q_stats['correct_answer'] = correct_option_numbers
+                
+                correct_submissions = set()
+                for correct_number in correct_option_numbers:
+                    submissions_with_correct_option = ChoiceAnswer.objects.filter(
+                        Question=question,
+                        ChoiceOptions__Number=correct_number
+                    ).values_list('Submission', flat=True)
+    
+                    # 更新完全正确回答的提交集合
+                    if not correct_submissions:
+                        correct_submissions = set(submissions_with_correct_option)
+                    else:
+                        correct_submissions.intersection_update(submissions_with_correct_option)
+
+                q_stats['correct_count'] = len(correct_submissions)
+            
+            elif question.Category == 4:
+                ratings = RatingAnswer.objects.filter(Question=question).values('rate').annotate(count=Count('rate'))
+                for rating in ratings:
+                    q_stats['rating_stats'].append({
+                        'optionContent': rating['rate'],
+                        'optionCnt': rating['count']
+                    })
+    
+            elif question.Category == 3:  
+                answers = BlankAnswer.objects.filter(Question=question).values('content').annotate(count=Count('content'))
+                for answer in answers:
+                    q_stats['blank_stats'].append({
+                        'fill': answer['content'],
+                        'cnt': answer['count']
+                    })
+                    
+            stats['questionList'].append(q_stats)
+        return JsonResponse(stats)
+    print("lorian end")
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+

@@ -389,7 +389,7 @@ const router = useRouter();
     addSingle(){
       this.questionCnt++;
       this.questionList.push({"type":1,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择一个选项","text":"请选择一个选项",
-      "optionCnt":1,"isDisabled":true,"score":0,
+      "optionCnt":1,"isDisabled":true,"max":1,"score":0,
       "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":ref(false),"MaxSelectablePeople":ref(-1)}]});
     },
     //TieZhu:添加多选题
