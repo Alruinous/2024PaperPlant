@@ -1295,18 +1295,26 @@ from django.db.models import Count, Sum, Q
 def survey_statistics(request, surveyID):
     if (request.method=='GET'):
 
-        survey = Survey.objects.get(SurveyID=surveyID)
-        survey_stat = SurveyStatistic.objects.get(Survey=survey)
+        print("start survey_statistics")
+        print("lorian")
+        print(surveyID)
+        survey = Survey.objects.filter(SurveyID=surveyID).first()
+        print("lorian")
+        print(survey)
+        survey_stat = SurveyStatistic.objects.filter(Survey=survey).first()
+        print("lorian")
+        print(survey_stat)
         #问卷基础信息
         stats = {
             'title': survey.Title,
             'description': survey.Description,
             'category': survey.Category,
             'total_submissions': survey_stat.TotalResponses,
-            'max_participants': survey.QuotaLimit if survey.QuotaLimit else None,
+            # 'max_participants': survey.QuotaLimit if survey.QuotaLimit else None,
             'average_score': survey_stat.AverageScore,
             'questionList': []
         }
+        print("lorian")
         
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
                                                     ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
@@ -1314,6 +1322,8 @@ def survey_statistics(request, surveyID):
         # 将迭代器转换为列表  
         questions = list(all_questionList_iterator)
         questions.sort(key=lambda x: x['QuestionNumber']) 
+
+        print("lorian")
         #题目信息
         for q in questions:
             if q["Category"] < 3:
@@ -1336,6 +1346,8 @@ def survey_statistics(request, surveyID):
                 'rating_stats': [],
                 'blank_stats': []
             }
+
+            print(q)
     
             #答案信息
             if question.Category < 3:
@@ -1384,5 +1396,6 @@ def survey_statistics(request, surveyID):
                     
             stats['questionList'].append(q_stats)
         return JsonResponse(stats)
+    print("lorian end")
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 

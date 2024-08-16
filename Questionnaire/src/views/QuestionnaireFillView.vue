@@ -251,6 +251,8 @@
           }
           else if(status == 1 && this.type == 1){
             this.success("投票成功");
+            console.log("QuestionFill");
+            console.log(this.questionnaireId);
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0,this.submissionId,this.username, 0);
             this.$router.push({path:'/dataPre',query:{questionnaireID:this.questionnaireId,flag:true}});
           }

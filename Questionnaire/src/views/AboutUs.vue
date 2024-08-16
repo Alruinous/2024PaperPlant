@@ -82,7 +82,7 @@
         justify-content: center; 
         align-items: center;
 
-        width: 80%;
+        width: 100%;
         margin: 0 auto;
         
     }

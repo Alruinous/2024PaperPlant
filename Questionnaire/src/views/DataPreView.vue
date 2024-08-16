@@ -381,59 +381,67 @@ export default {
     ElMessage,
   },
   mounted(){
-    this.addSingle();
-    this.addMultiple();
-    this.addFill();
-    this.addScore();
-    let i = 0;
-    for(i=0;i<this.questionList.length;i++){
-        if(this.questionList[i].type != 3){
-          this.cross.push({"type":this.questionList[i].type,"value":i,"label":this.questionList[i].question});
+    // this.addSingle();
+    // this.addMultiple();
+    // this.addFill();
+    // this.addScore();
+    // let i = 0;
+    // for(i=0;i<this.questionList.length;i++){
+    //   if(this.questionList[i].type != 3){
+    //     this.cross.push({"type":this.questionList[i].type,"value":i,"label":this.questionList[i].question});
+    //   }
+    // }
+
+    this.questionnaireId = parseInt(this.$route.query.questionnaireID);
+    this.flag = this.$route.query.flag;
+
+    console.log("Datapre");
+    console.log(this.questionnaireId);
+
+    var promise = GetOtherData(this.questionnaireId);
+    console.log(promise);
+    promise.then((result) => {
+      this.questionList = result.questionList;
+      this.title = result.title;
+
+      console.log(this.questionList);
+      let i = 0;
+      for(i = 0;i < this.questionList.length;i++){
+        this.questionList[i].hasChart = ref(false);
+        if(this.questionList[i].type <= 2){
+          let j = 0;
+          this.questionList[i].optionContent = [];
+          this.questionList[i].optionCnt = [];
+          for(j = 0;j < this.questionList[i].options_stats.length;j++){
+            this.questionList[i].optionContent.push(this.questionList[i].options_stats[j].optionContent);
+            this.questionList[i].optionCnt.push(this.questionList[i].options_stats[j].optionCnt);
+          }
+        }
+        else if(this.questionList[i].type == 4){
+          let j = 0;
+          this.questionList[i].optionContent = [];
+          this.questionList[i].optionCnt = [];
+          for(j = 0;j < this.questionList[i].rating_stats.length;j++){
+            this.questionList[i].optionContent.push(this.questionList[i].rating_stats[j].optionContent);
+            this.questionList[i].optionCnt.push(this.questionList[i].rating_stats[j].optionCnt);
+          }
+        }
+        else{
+          let j = 0;
+          this.questionList[i].fill = [];
+          this.questionList[i].cnt = [];
+          for(j = 0;j < this.questionList[i].blank_stats.length;j++){
+            this.questionList[i].optionContent.push(this.questionList[i].blank_stats[j].fill);
+            this.questionList[i].optionCnt.push(this.questionList[i].blank_stats[j].cnt);
+          }
         }
       }
+
+      this.url = window.location.href;
+    })
   },
   created(){
-    // this.questionnaireId = parseInt(this.$route.query.questionnaireId);
-    // this.flag = this.$route.query.flag;
-    // var promise = GetOtherData(this.questionnaireId);
-    // console.log(promise);
-    // promise.then((result) => {
-    //   this.questionList = result.questionList;
-    //   this.title = result.title;
-      let i = 0;
-    //   for(i = 0;i < this.questionList.length;i++){
-    //     this.questionList[i].hasChart = ref(false);
-    //     if(this.questionList[i].type <= 2){
-    //       let j = 0;
-    //       this.questionList[i].optionContent = [];
-    //       this.questionList[i].optionCnt = [];
-    //       for(j = 0;j < this.questionList[i].options_stats.length;j++){
-    //         this.questionList[i].optionContent.push(this.questionList[i].options_stats[j].optionContent);
-    //         this.questionList[i].optionCnt.push(this.questionList[i].options_stats[j].optionCnt);
-    //       }
-    //     }
-    //     else if(this.questionList[i].type == 4){
-    //       let j = 0;
-    //       this.questionList[i].optionContent = [];
-    //       this.questionList[i].optionCnt = [];
-    //       for(j = 0;j < this.questionList[i].rating_stats.length;j++){
-    //         this.questionList[i].optionContent.push(this.questionList[i].rating_stats[j].optionContent);
-    //         this.questionList[i].optionCnt.push(this.questionList[i].rating_stats[j].optionCnt);
-    //       }
-    //     }
-    //     else{
-    //       let j = 0;
-    //       this.questionList[i].fill = [];
-    //       this.questionList[i].cnt = [];
-    //       for(j = 0;j < this.questionList[i].blank_stats.length;j++){
-    //         this.questionList[i].optionContent.push(this.questionList[i].blank_stats[j].fill);
-    //         this.questionList[i].optionCnt.push(this.questionList[i].blank_stats[j].cnt);
-    //       }
-    //     }
-    //   }
-
-    //   this.url = window.location.href;
-    // })
+    
   }
 };
 </script>
