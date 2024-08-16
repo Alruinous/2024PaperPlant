@@ -436,7 +436,6 @@ def get_submission(request):
                 question=questionNewList[0]
                 
                 print("123154654")
-                print(question)
 
                 # print(question.CorrectAnswer)
                 if question is None:
@@ -545,7 +544,7 @@ class GetQuestionnaireView(APIView):
                                      'optionList':optionList})
                 
             elif question["Category"]==3:                  #填空题
-                print(question)
+                
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'correctAnswer':question["CorrectAnswer"]})
 
@@ -627,6 +626,8 @@ def save_qs_design(request):
             index=1
             for question in questionList:
                 if question["type"]==1 or question["type"]==2:        #单选/多选
+
+                    print("---")
                     optionList=question['optionList']
 
                     question=ChoiceQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
@@ -636,10 +637,13 @@ def save_qs_design(request):
                     #所有选项:
                     jdex=1
                     for option in optionList:
+                        print(option['MaxSelectablePeople'])
                         option=ChoiceOption.objects.create(Question=question,Text=option["content"],IsCorrect=option["isCorrect"],
                                                            OptionNumber=jdex,MaxSelectablePeople=option['MaxSelectablePeople'])
                         option.save()
                         jdex=jdex+1
+
+                        print("***")
                 
                 elif question["type"]==3:                          #填空
                     # print(question)
@@ -916,7 +920,7 @@ def get_all_released_qs(request):
             else:
                 data_list.append({'Title':survey.Title,'PostMan':survey.Owner.username,'PublishDate':survey.PublishDate,
                                   'SurveyID':survey.SurveyID,'categoryId':survey.Category,'Description':survey.Description,
-                                  'Reward':None,'HeadCount':survey.QuotaLimit})
+                                  'Reward':None})
         data={'data':data_list}
         return JsonResponse(data)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
