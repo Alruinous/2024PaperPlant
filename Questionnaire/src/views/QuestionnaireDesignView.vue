@@ -83,13 +83,15 @@
            @dragover.prevent: 阻止默认行为，使得元素可以被放置。
            @drop: 放置元素时触发，处理元素放置后的逻辑。
            @dragenter.prevent: 进入另一个可放置元素时触发，这里用来调整元素位置。 -->
-
+      <transition-group name="list" tag="div">
       <div v-for="index in questionList.length"
+      :class="{ 'dragging': draggedIndex === index - 1 }"
       draggable=true
       @dragstart="dragStart(index-1)"
       @dragover.prevent
       @drop="drop(index-1)"
       @dragenter.prevent="dragEnter(index-1)"
+      @dragend="dragEnd"
       >
 
         <!-- TieZhu:questionList说明
@@ -272,6 +274,7 @@
         </div>
 
       </div>
+      </transition-group>
 
     </div>
 
@@ -417,6 +420,9 @@ const router = useRouter();
     //拖动改变顺序
     dragStart(index){
       this.draggedIndex = index;
+    },
+    dragEnd() {
+      this.draggedIndex = -1;
     },
     dragEnter(index){
       if(index != this.draggedIndex){
@@ -697,4 +703,11 @@ const router = useRouter();
   position: relative;
   /* margin-bottom: 10%; */
 }
+.dragging {
+  color:#F4F6F7;
+}
+.list-move {
+  transition: transform 0.3s ease-in-out; /* 控制平滑移动的过渡效果 */
+}
+
 </style>
