@@ -298,7 +298,7 @@ class GetStoreFillView(APIView):
         '''1.以下部分与问卷编辑界面的get函数类似，拿到题干'''
         '''2.拿到当前submissionID对应填写记录'''
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
-                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
+                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID','MaxSelectable').all(),
                                                     RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionID','QuestionNumber').all())
                                                     
         all_questions_list = list(all_questionList_iterator)
@@ -312,6 +312,9 @@ class GetStoreFillView(APIView):
         #print(all_questions)
         for question in all_questions_list:
             if question["Category"]==1 or question["Category"]==2:    #选择题
+                #print(question['MaxSelectable'])
+                print(question)
+                print(question['OptionCnt'])
 
                 #该单选题的用户选项:当前问卷当前submission(如果用户未选，则找不到对应的答案记录)
                 if question["Category"]==1:
@@ -336,13 +339,14 @@ class GetStoreFillView(APIView):
 
                 optionList=[]
                 #将所有选项顺序排列
+                print("***")
                 options_query=ChoiceOption.objects.filter(Question=question["QuestionID"]).order_by('OptionNumber')
                 for option in options_query:
                     optionList.append({'content':option.Text,'optionNumber':option.OptionNumber,'isCorrect':option.IsCorrect,
                                        'optionId':option.OptionID,'MaxSelectablePeople':option.MaxSelectablePeople})
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'optionCnt':question["OptionCnt"],
-                                     'optionList':optionList,'Answer':answer})
+                                     'optionList':optionList,'Answer':answer,'max':question['MaxSelectable']})
                 
             elif question["Category"]==3:                  #填空题
                 #该填空题的用户答案:有且仅有一条记录
@@ -587,7 +591,7 @@ class GetQuestionnaireView(APIView):
                                        'optionID':option.OptionID,'MaxSelectablePeople':option.MaxSelectablePeople})
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'optionCnt':question["OptionCnt"],
-                                     'optionList':optionList})
+                                     'optionList':optionList,'max':question['MaxSelectable']})
                 
             elif question["Category"]==3:                  #填空题
                 
@@ -674,22 +678,22 @@ def save_qs_design(request):
                 if question["type"]==1 or question["type"]==2:        #单选/多选
 
                     print("---")
+                    print(question['max'])
                     optionList=question['optionList']
 
                     question=ChoiceQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
                                                                 QuestionNumber=index,Score=question["score"],Category=question["type"],
-                                                                OptionCnt=question["optionCnt"])
+                                                                OptionCnt=question["optionCnt"],MaxSelectable=question['max'])
                     question.save()
+
                     #所有选项:
                     jdex=1
                     for option in optionList:
-                        print(option['MaxSelectablePeople'])
                         option=ChoiceOption.objects.create(Question=question,Text=option["content"],IsCorrect=option["isCorrect"],
-                                                           OptionNumber=jdex,MaxSelectablePeople=option['MaxSelectablePeople'])
+                                                           OptionNumber=jdex)
                         option.save()
                         jdex=jdex+1
 
-                        print("***")
                 
                 elif question["type"]==3:                          #填空
                     # print(question)
