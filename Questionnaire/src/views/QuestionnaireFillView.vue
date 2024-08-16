@@ -41,9 +41,11 @@
             <br/>
             <van-radio-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt" :disabled="flag">
                 <van-radio :name="questionList[index-1].optionList[index2-1].optionId" checked-color="#0283EF" :label-disabled=true :disabled="questionList[index-1].optionList[index2-1].MaxSelectablePeople == 0">
-                    <div>
-                    {{ questionList[index-1].optionList[index2-1].content }}
-                    </div>
+                      <div>
+                        <span>{{ questionList[index-1].optionList[index2-1].content }}</span>
+                        &ensp;
+                        <span style="color:#F8C471 ; font-weight:bold;">[ 剩余人数：{{ questionList[index-1].optionList[index2-1].MaxSelectablePeople }} ]</span>
+                      </div>
                 </van-radio>
                 <br/>
             </van-radio-group>
@@ -60,9 +62,11 @@
             <van-checkbox-group v-model=" questionList[index-1].Answer" v-for="index2 in questionList[index-1].optionCnt"  checked-color="#0283EF" :disabled="flag">
                 <br/>
                 <van-checkbox :name="questionList[index-1].optionList[index2-1].optionId" shape="square" :label-disabled=true :disabled="questionList[index-1].optionList[index2-1].MaxSelectablePeople == 0">
-                    <div>
-                      {{ questionList[index-1].optionList[index2-1].content }}
-                    </div>
+                  <div>
+                    <span>{{ questionList[index-1].optionList[index2-1].content }}</span>
+                    &ensp;
+                    <span style="color:#F8C471 ; font-weight:bold;">[ 剩余人数：{{ questionList[index-1].optionList[index2-1].MaxSelectablePeople }} ]</span>
+                  </div>
                 </van-checkbox>
                 <br/>
             </van-checkbox-group>
