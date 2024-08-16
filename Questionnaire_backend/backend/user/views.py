@@ -263,9 +263,11 @@ class GetStoreFillView(APIView):
                                                     ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
                                                     RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionID','QuestionNumber').all())
                                                     
-        # 将迭代器转换为列表 (按QuestionNumber递增排序)
         all_questions_list = list(all_questionList_iterator)
-        all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
+
+        # 将迭代器转换为列表 (按QuestionNumber递增排序)--顺序展示
+        if survey.IsOrder:
+            all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
 
         #print(all_questions_list.length())
         questionList=[]
