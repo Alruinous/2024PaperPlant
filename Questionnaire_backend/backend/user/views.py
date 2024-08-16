@@ -822,7 +822,7 @@ def check_qs(request,username,questionnaireId,type):
             submission=submission_query.first()
             if submission.Status=='Unsubmitted':
                 data={'message':False,"content":"对于当前问卷，您有未提交的填写记录"}
-            elif submission.Status=='Submitted':
+            elif submission.Status=='Graded':
                 data={'message':False,"content":"您已完成当前考试"}
             else:
                 data={'message':False,"content":"当前问卷已被撤回"}
