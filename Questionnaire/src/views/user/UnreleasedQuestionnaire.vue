@@ -125,14 +125,6 @@ const initDraft = (username) =>{
     questionnaires.value = [];  
     var promise = GetUnreleasedQs(username);
     promise.then((result)=>{
-        // var categoryName = "";
-        // if(categoryId.value != ""){
-        //     categorys.value.forEach(category => {
-        //         if (category.id === categoryId) {
-        //             categoryName = category.categoryName;
-        //         }
-        //     });
-        // }
         var count = 0;
         var i = 1;
         result.data.forEach(element => {
@@ -184,7 +176,15 @@ const deleteQs = (id) =>{
                         message: result.content,
                     })
                 }
-                initDraft(username.value);
+                if(total.value % 4 === 0 && pageNum.value == total.value / 4)
+                {
+                    console.log("222");
+                }
+                else
+                {
+                    initDraft(username.value);
+                }
+                
             })
         })
         .catch(() => {
