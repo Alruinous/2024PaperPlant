@@ -228,6 +228,7 @@ class GetStoreFillView(APIView):
           
         
         #从问卷广场界面进入：查找该用户是否有该问卷未提交的填写记录
+        print(submissionID)
         if submissionID=="-1":
             submission_query=Submission.objects.filter(Respondent=user,Survey=survey,Status='Unsubmitted')
             if submission_query.exists():
@@ -243,25 +244,52 @@ class GetStoreFillView(APIView):
                 submissionID=submission.SubmissionID
                 # newsubmissionID = submission.SubmissionID
                 # return HttpResponse(content='Submission not existed', status=404) 
+
+        #submissionID=-2时,只传回问卷题干(同问卷编辑的GET接口)
+        elif submissionID=="-2":
+            print("here---")
+            all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
+                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
+                                                    RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())
+                                                    
+            # 将迭代器转换为列表  
+            all_questions_list = list(all_questionList_iterator)
+            all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
+
+            questionList=[]
+
+            for question in all_questions_list:
+                if question["Category"]==1 or question["Category"]==2:    #选择题
+                    optionList=[]
+                    #将所有选项顺序排列
+                    options_query=ChoiceOption.objects.filter(Question=question["QuestionID"]).order_by('OptionNumber')
+                    for option in options_query:
+                        optionList.append({'content':option.Text,'optionNumber':option.OptionNumber,'isCorrect':option.IsCorrect,
+                                       'optionID':option.OptionID,'MaxSelectablePeople':option.MaxSelectablePeople})
+                    questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
+                                     'isNecessary':question["IsRequired"],'score':question["Score"],'optionCnt':question["OptionCnt"],
+                                     'optionList':optionList})
+                
+                elif question["Category"]==3:                  #填空题
+                
+                    questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
+                                     'isNecessary':question["IsRequired"],'score':question["Score"],'correctAnswer':question["CorrectAnswer"]})
+
+                elif question["Category"]==4:                  #评分题
+                    questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
+                                     'isNecessary':question["IsRequired"],'score':question["Score"]})
+
         
-        #从问卷管理界面进入：
-        else:
-            print("TieZhuGieGie")
-            submission=Submission.objects.filter(SubmissionID=submissionID)
-            print(submission)
-            print(submissionID)
-            print("TieZhuGieGie")
-            '''if not submission.exists():
-                print("TieZhuGieGie")
-                return HttpResponse(content='Submission not found', status=404) '''
+            data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
+                'description':survey.Description,'questionList':questionList}
+            return JsonResponse(data)
+        
+        submission=Submission.objects.filter(SubmissionID=submissionID)
+        if not submission.exists():
+            return HttpResponse(content='Submission not found', status=404) 
             
-            #submissionID=-2时,只传回问卷题干
-            if submissionID=="-2":
-                data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
-                'description':survey.Description,'duration':0}
-                return JsonResponse(data)
-        
-            duration=submission.Interval
+        duration=submission.Interval
+    
         
         Title=survey.Title
         Description=survey.Description
@@ -893,8 +921,6 @@ def check_qs(request,username,questionnaireId,type):
                     if choiceOption.MaxSelectablePeople>0:
                         isFull=False
                 
-                print("isFull---")
-                print(isFull)
                 if isFull==True:
                     data={'message':False,"content":"当前报名人数已满"}
                     return JsonResponse(data)
