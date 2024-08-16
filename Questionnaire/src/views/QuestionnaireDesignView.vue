@@ -602,7 +602,6 @@ const router = useRouter();
         this.description = result.description;
         this.destext = this.description;
         this.isDisorder = result.isOrder;
-        console.log(this.questionList);
         let i = 0,j = 0;
         for(i = 0;i < this.questionList.length;i++){
           this.questionList[i].showToolbar = false;
@@ -616,9 +615,9 @@ const router = useRouter();
             this.questionList[i].optionList[j].isEditing = false;
             }
           }
-          else{
-            this.questionList[i].correctAnswer = "";
-          }
+          // else{
+          //   this.questionList[i].correctAnswer = "";
+          // }
         }
       })
     }
