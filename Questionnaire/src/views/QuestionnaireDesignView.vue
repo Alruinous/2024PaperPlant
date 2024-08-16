@@ -53,9 +53,6 @@
           <div v-if="type==3">
             限时&nbsp;<el-input-number v-model="timeLimit" size="small" :min="1" controls-position="right"/>&nbsp;min
           </div>
-          <!-- <div v-if="type==2">
-            <el-input-number v-model="people" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
-          </div> -->
         </div>
         <div class="row"></div>
         <div class = "post_button_container">
@@ -159,7 +156,7 @@
                       <el-tooltip content="正确答案" placement="right">
                         <el-switch v-if="type==3" v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(0,index-1,index2-1)"/>
                       </el-tooltip>
-                      <el-input-number v-if="type==2" v-model="questionList[index-1].optionList[index2-1].people" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
+                      <el-input-number v-if="type==2" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
                     </div>
                     
                   </n-popover>
@@ -203,7 +200,7 @@
                     <el-tooltip content="正确答案" placement="right">
                       <el-switch v-if="type==3" v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(1,index-1,index2-1)"/>
                     </el-tooltip>
-                    <el-input-number v-if="type==2" v-model="questionList[index-1].optionList[index2-1].people" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
+                    <el-input-number v-if="type==2" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>&nbsp;报名人数
                   </n-popover>
                 </van-checkbox>
                 <br/>
@@ -336,7 +333,6 @@ const router = useRouter();
         this.questionnaireId,
         this.type,
         this.questionList,
-        this.people,
         this.isDisorder,
         this.title,
         0
@@ -362,7 +358,6 @@ const router = useRouter();
         this.questionnaireId,
         this.type,
         this.questionList,
-        this.people,
         this.isDisorder,
         this.title,
         1
@@ -389,14 +384,14 @@ const router = useRouter();
       this.questionCnt++;
       this.questionList.push({"type":1,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择一个选项","text":"请选择一个选项",
       "optionCnt":1,"isDisabled":true,"score":0,
-      "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":ref(false),"people":ref(-1)}]});
+      "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":ref(false),"MaxSelectablePeople":ref(-1)}]});
     },
     //TieZhu:添加多选题
     addMultiple(){
       this.questionCnt++;
       this.questionList.push({"type":2,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择以下选项（多选）","text":"请选择以下选项（多选）",
       "optionCnt":1,"isDisabled":true,"max":1,"score":0,
-      "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false,"people":ref(-1)}]});
+      "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false,"MaxSelectablePeople":ref(-1)}]});
     },
     //TieZhu:添加填空题
     addFill(){
@@ -449,7 +444,7 @@ const router = useRouter();
     //选择题
     addOption(index,index2){
       this.questionList[index].optionCnt++;
-      this.questionList[index].optionList.splice(index2+1,0,{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false,"people":ref(-1)});
+      this.questionList[index].optionList.splice(index2+1,0,{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false,"MaxSelectablePeople":ref(-1)});
       if(this.questionList[index].optionCnt==2){
           this.questionList[index].isDisabled = false;
       }
@@ -579,7 +574,7 @@ const router = useRouter();
       if(this.flag==1){
         this.questionnaireId = -1;
       }
-      var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.people,this.timeLimit,this.questionList,this.description ,this.username,false);
+      var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,false);
       this.$router.push({path:'/userManage/filled'});
       this.success("保存成功");
     },
@@ -588,7 +583,7 @@ const router = useRouter();
       if(this.flag==1){
         this.questionnaireId = -1;
       }
-      var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.people,this.timeLimit,this.questionList,this.description ,this.username,true);
+      var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,true);
       this.$router.push({path:'/userManage/filled'});
       this.success("发布成功");
     }
@@ -630,9 +625,6 @@ const router = useRouter();
             this.questionList[i].optionList[j].text = this.questionList[i].optionList[j].content;
             this.questionList[i].optionList[j].isEditing = false;
             }
-          }
-          else{
-            this.questionList[i].correctAnswer = "";
           }
         }
       })
