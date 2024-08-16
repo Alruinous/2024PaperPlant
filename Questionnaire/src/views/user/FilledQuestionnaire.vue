@@ -108,14 +108,14 @@ const goToQuestionnaireFill = (questionnaireId, submissionId, Status, type, scor
   }
   else{
     if(type == 0){
-        // r.push({
-        //     path: "/normalAnswer",
-        //     query: {
-        //         questionnaireId: questionnaireId,
-        //         submissionId: submissionId
-        //     }
-        // });
-        ElMessage.success("提交成功！")
+        r.push({
+            path: "/normalAnswer",
+            query: {
+                questionnaireID: questionnaireId,
+                submissionID: submissionId
+            }
+        });
+        // ElMessage.success("提交成功！")
     }
     else if(type == 1){
         r.push({
@@ -148,15 +148,15 @@ const goToQuestionnaireFill = (questionnaireId, submissionId, Status, type, scor
         })
     }
     else if(type == 3){
-        // r.push({
-        //     path: "/testAnswer",
-        //     query: {
-        //         questionnaireId: questionnaireId,
-        //         submissionId: submissionId,
-        //         score: score,
-        //     }
-        // });
-        ElMessage.success("试卷已批改！");
+        r.push({
+            path: "/testAnswer",
+            query: {
+                questionnaireId: questionnaireId,
+                submissionId: submissionId,
+                score: score,
+            }
+        });
+        // ElMessage.success("试卷已批改！");
     }
   }
   

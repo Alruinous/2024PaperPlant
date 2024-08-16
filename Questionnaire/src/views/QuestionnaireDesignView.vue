@@ -630,9 +630,6 @@ const router = useRouter();
             this.questionList[i].optionList[j].isEditing = false;
             }
           }
-          // else{
-          //   this.questionList[i].correctAnswer = "";
-          // }
         }
       })
     }
