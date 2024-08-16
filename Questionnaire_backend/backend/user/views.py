@@ -346,7 +346,7 @@ class GetStoreFillView(APIView):
                                        'optionId':option.OptionID,'MaxSelectablePeople':option.MaxSelectablePeople})
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'optionCnt':question["OptionCnt"],
-                                     'optionList':optionList,'Answer':answer,'max':question['MaxSelectable']})
+                                     'optionList':optionList,'Answer':answer,'max':question['max']})
                 
             elif question["Category"]==3:                  #填空题
                 #该填空题的用户答案:有且仅有一条记录
@@ -568,7 +568,7 @@ class GetQuestionnaireView(APIView):
         '''
 
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
-                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
+                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','MaxSelectable','QuestionID').all(),
                                                     RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())
                                                     
         # 将迭代器转换为列表  
@@ -622,12 +622,11 @@ def save_qs_design(request):
             Is_released=body['Is_released'] #保存/发布
 
             questionList=body['questionList']   #问卷题目列表
-            # print(questionList)
+            print(questionList)
             user=User.objects.get(username=username)
             if user is None:        
                 return HttpResponse(content='User not found', status=400) 
             
-
             #当前不存在该问卷，创建：
             if surveyID==-1:
                 survey=Survey.objects.create(Owner=user,Title=title,
@@ -635,6 +634,7 @@ def save_qs_design(request):
                                              Is_open=True,Is_deleted=False,Category=catecory,
                                              TotalScore=0,TimeLimit=timelimit,IsOrder=isOrder
                                             )
+                print("TieZhu")
                 #survey.QuotaLimit=people
             #已有该问卷的编辑记录
             else:
@@ -674,10 +674,8 @@ def save_qs_design(request):
             for question in questionList:
                 if question["type"]==1 or question["type"]==2:        #单选/多选
 
-                    print("---")
-                    print(question['max'])
                     optionList=question['optionList']
-
+                    
                     question=ChoiceQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
                                                                 QuestionNumber=index,Score=question["score"],Category=question["type"],
                                                                 OptionCnt=question["optionCnt"],MaxSelectable=question['max'])
@@ -687,7 +685,7 @@ def save_qs_design(request):
                     jdex=1
                     for option in optionList:
                         option=ChoiceOption.objects.create(Question=question,Text=option["content"],IsCorrect=option["isCorrect"],
-                                                           OptionNumber=jdex)
+                                                           OptionNumber=jdex,MaxSelectablePeople=option['MaxSelectablePeople'])
                         option.save()
                         jdex=jdex+1
 
@@ -907,6 +905,7 @@ def check_qs(request,username,questionnaireId,type):
     
     #报名问卷：超过人数，不可以再报名
     elif qs.Category==2:
+        print("TieZhu")
         #检查是否超人数(检查每个必填选择题的所有选项，是否都超人数)
         submission_query=Submission.objects.filter(Respondent=user,Survey=qs)
 
