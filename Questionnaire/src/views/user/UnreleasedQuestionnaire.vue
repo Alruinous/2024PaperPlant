@@ -354,10 +354,10 @@ const formatDate = (date) => {
                 <div class="dialogfather">
                     <div class="dialogfont">请选择模板</div>
                     <div class="dialog">
-                        <div class="book1" @click="goToQuestionnaireDesignCopy(291, 0, 1)">
+                        <div class="book1" @click="goToQuestionnaireDesignCopy(293, 0, 1)">
                             <img src="../../assets/mod/0.png">
                             <div class="cover1">
-                                <span>客户满意度调查问卷</span>
+                                <span>MBTI测试</span>
                             </div>
                         </div>
                         <div class="book1" @click="goToQuestionnaireDesignCopy(292, 0, 1)">
