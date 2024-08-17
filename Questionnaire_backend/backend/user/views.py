@@ -346,7 +346,7 @@ class GetStoreFillView(APIView):
                                        'optionId':option.OptionID,'MaxSelectablePeople':option.MaxSelectablePeople})
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'optionCnt':question["OptionCnt"],
-                                     'optionList':optionList,'Answer':answer,'max':question['max']})
+                                     'optionList':optionList,'Answer':answer,'max':question['MaxSelectable']})
                 
             elif question["Category"]==3:                  #填空题
                 #该填空题的用户答案:有且仅有一条记录
