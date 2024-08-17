@@ -1124,8 +1124,11 @@ def send_registration_email(request):
         password=body['password']
         email=body['email']
 
+        print(username)
+        print(email)
 
         if(email==False):
+            print("!")
             user_queryset=User.objects.filter(username=username)
             user=user_queryset.first()
             #return HttpResponse(status=200,content=username)
@@ -1151,7 +1154,19 @@ def send_registration_email(request):
 
         user1=User.objects.filter(username=username)
         if user1.exists():
-            return HttpResponse(status=200,content=False)
+            print("!")
+            data={
+                'message': "same username",
+            }
+            return JsonResponse(data)
+        
+        user2=User.objects.filter(email=email)
+        if user2.exists():
+            print("!!")
+            data={
+                'message': "same email",
+            }
+            return JsonResponse(data)
 
         #创建新用户(尚未邮箱验证,非有效用户)
         user=User.objects.create(username=username,email=email,
@@ -1174,8 +1189,10 @@ def send_registration_email(request):
         #email.attach_file('/images/weather_map.png')
         email.send()
 
-        return HttpResponse("请查看邮箱，按照提示激活账户。"
-                                "(验证链接只在一小时内有效).")
+        data={
+            'message': "register success",
+        }
+        return JsonResponse(data)
     return HttpResponse(status=200,content=True)
 
 #用户点击邮箱链接,调用视图activate_user(),验证激活用户:
