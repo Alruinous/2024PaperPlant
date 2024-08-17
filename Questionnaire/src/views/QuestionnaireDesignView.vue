@@ -151,15 +151,22 @@
                       />
                       <span v-else @click="startEditing(1,index-1,index2-1)" :class="{ 'correct-answer': questionList[index-1].optionList[index2-1].isCorrect }">{{ questionList[index-1].optionList[index2-1].text }}</span>
                     </template>
-                    <div>
+                    <el-tooltip content="添加选项" placement="top">
                       <el-button size="small" color="#fef0f0" @click="addOption(index-1,index2-1)" text><el-icon><Plus/></el-icon></el-button>
+                    </el-tooltip>
+                    
+                    <el-tooltip content="删除选项" placement="top">
                       <el-button size="small" color="#ecf5ff" @click="deleteOption(index-1,index2-1)" :disabled="questionList[index-1].isDisabled" text><el-icon><Minus/></el-icon></el-button>
-                      &nbsp;
-                      <el-tooltip content="正确答案" placement="right">
-                        <el-switch v-if="type==3" v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(0,index-1,index2-1)"/>
-                      </el-tooltip>
-                      <el-input-number v-if="type==2 && questionList[index-1].isNecessary" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>
-                    </div>
+                    </el-tooltip>
+
+                    &nbsp;
+                    <el-tooltip v-if="type==3" content="正确答案" placement="top">
+                      <el-switch v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(1,index-1,index2-1)"/>
+                    </el-tooltip>
+
+                    <el-tooltip v-if="type == 2 && questionList[index-1].isNecessary" content="人数限制" placement="top">
+                      <el-input-number  v-if="type == 2 && questionList[index-1].isNecessary" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>
+                    </el-tooltip>
                     
                   </n-popover>
                 </van-radio>
@@ -197,15 +204,22 @@
                       />
                       <span v-else @click="startEditing(1,index-1,index2-1)" :class="{ 'correct-answer': questionList[index-1].optionList[index2-1].isCorrect }">{{ questionList[index-1].optionList[index2-1].text }}</span>
                     </template>
-                    <el-button size="small" color="#fef0f0" @click="addOption(index-1,index2-1)" text><el-icon><Plus/></el-icon></el-button>
-                    <el-button size="small" color="#ecf5ff" @click="deleteOption(index-1,index2-1)" :disabled="questionList[index-1].isDisabled" text><el-icon><Minus/></el-icon></el-button>
-                    &nbsp;
-                    <el-tooltip content="正确答案" placement="right">
-                      <el-switch v-if="type==3" v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(1,index-1,index2-1)"/>
+                    <el-tooltip content="添加选项" placement="top">
+                      <el-button size="small" color="#fef0f0" @click="addOption(index-1,index2-1)" text><el-icon><Plus/></el-icon></el-button>
                     </el-tooltip>
-                    <div v-if="type == 2 && questionList[index-1].isNecessary">
-                      人数限额：<el-input-number v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>
-                    </div>
+                    
+                    <el-tooltip content="删除选项" placement="top">
+                      <el-button size="small" color="#ecf5ff" @click="deleteOption(index-1,index2-1)" :disabled="questionList[index-1].isDisabled" text><el-icon><Minus/></el-icon></el-button>
+                    </el-tooltip>
+
+                    &nbsp;
+                    <el-tooltip v-if="type==3" content="正确答案" placement="top">
+                      <el-switch v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(1,index-1,index2-1)"/>
+                    </el-tooltip>
+
+                    <el-tooltip v-if="type == 2 && questionList[index-1].isNecessary" content="人数限制" placement="top">
+                      <el-input-number  v-if="type == 2 && questionList[index-1].isNecessary" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>
+                    </el-tooltip>
                   </n-popover>
                 </van-checkbox>
                 <br/>
@@ -407,6 +421,7 @@ const router = useRouter();
         this.questionList.push({"type":2,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择以下选项（多选）","text":"请选择以下选项（多选）",
         "optionCnt":1,"isDisabled":true,"max":1,"score":0,
         "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false,"MaxSelectablePeople":ref(1)}]});
+        return;
       }
       this.questionList.push({"type":2,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择以下选项（多选）","text":"请选择以下选项（多选）",
       "optionCnt":1,"isDisabled":true,"max":1,"score":0,

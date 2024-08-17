@@ -9,7 +9,7 @@
     <div class="back">
       <el-container>
         <el-header>
-          <navigation-bar style="position: fixed;"/>
+          <navigation-bar v-if="username != null" style="position: fixed;"/>
         </el-header>
         <el-main class="main_container">
           <div class="right">
@@ -111,13 +111,13 @@
                   </div>
                   </div>
                 </n-tab-pane>
-                <n-tab-pane name="crossData" tab="交叉分析">
+                <n-tab-pane v-if="!flag" name="crossData" tab="交叉分析">
                   <div id="crossData">
                     <div style=" margin-left: 2%; margin-right: 2%;">自变量X</div>
                     <div class="row"></div>
                     <div>
                       <el-select v-model="cross1" placeholder="添加自变量" size="large" style="width: 240px; margin-left: 2%; margin-right: 2%;">
-                        <el-option v-for="item in cross" :key="item.value" :label="item.label" :value="item.value"/>
+                        <el-option v-for="item in cross" :key="item.value" :label="item.label" :value="item.value" :model="cross1"/>
                       </el-select>
                     </div>
                     <br/>
@@ -126,7 +126,7 @@
                     <div class="row"></div>
                     <div>
                       <el-select v-model="cross2" placeholder="添加因变量" size="large" style="width: 240px; margin-left: 2%; margin-right: 2%;">
-                        <el-option v-for="item in cross" :key="item.value" :label="item.label" :value="item.value"/>
+                        <el-option v-for="item in cross" :key="item.value" :label="item.label" :value="item.value" :model="cross1"/>
                       </el-select>
                     </div>
 
@@ -134,6 +134,7 @@
                       <br/>
                       <div style="margin-left: 2%; margin-right: 2%;">
                         <el-button @click="toggleChart(-1,'bar')" style="color: #409EFF;" plain>柱状图</el-button>
+                        <el-button @click="toggleChart(-1,'pie')" style="color: #409EFF;" plain>饼状图</el-button>
                         <el-button @click="toggleChart(-1,'line')" style="color: #409EFF;" plain>折线图</el-button>
                       </div>
                     </n-collapse-transition>
@@ -151,15 +152,15 @@
             <el-tooltip content="下载数据" placement="right">
               <el-button size="large" @click="dialog=true" text circle><el-icon color="#337ecc" :size="30"><Download /></el-icon></el-button>
             </el-tooltip>
-            <div class="row"></div>
-            <div class="row"></div>
-            <el-tooltip content="分享" placement="right">
+            <div v-if="!isShare" class="row"></div>
+            <div v-if="!isShare" class="row"></div>
+            <el-tooltip v-if="!isShare" content="分享" placement="right">
               <n-popover trigger="click" placement="bottom">
                 <template #trigger>
                   <el-button size="large" text circle><el-icon color="#337ecc" :size="30" ><Share /></el-icon></el-button>
                 </template>
                 <!-- TieZhu：分享链接弹出框 -->
-                <span><n-qr-code value="http://localhost:8080/dataPre?questionnaireId=4" error-correction-level="H"/></span>
+                <span><n-qr-code :value="url+'&isShare=true'" error-correction-level="H"/></span>
               </n-popover>
             </el-tooltip>
           </div>
@@ -180,7 +181,7 @@ import NavigationBar from "@/components/NavigationBarInQuestionnaire.vue"
 import { NCard, dialogDark } from 'naive-ui';
 import { NTabs } from 'naive-ui';
 import { NTabPane } from 'naive-ui';
-import { ref } from 'vue';
+import { getCurrentInstance, ref } from 'vue';
 import { NCollapseTransition } from 'naive-ui';
 import { NSpace } from 'naive-ui';
 import { NPopover } from 'naive-ui';
@@ -192,6 +193,7 @@ import { ElMessage } from 'element-plus'
 export default {
   data() {
     return {
+      username:undefined,
       dialog:false,
       input:'',
       questionnaireId:2,
@@ -204,8 +206,8 @@ export default {
       cross1:undefined, //自变量的问题ID
       cross2:undefined, //因变量的问题ID
       crossHasChart:false,
-      crossContent:["11-5","22-3","11-5","44-8"],
-      crossCnt:[1,2,1,1],
+      crossContent:[],
+      crossCnt:[],
       //print
       printObj: {
         id: 'dataAnalysis', // 这里是要打印元素的ID
@@ -217,6 +219,7 @@ export default {
       },
       url:'',
       flag:false,//是否是为了展示投票结果而存在的页面
+      isShare:false,//是否为别人分享的数据（此时不应该允许此人继续分享）
     };
   },
   
@@ -234,8 +237,17 @@ export default {
           return;
         }
         this.crossHasChart = true;
-        this.$nextTick(() => {
-          this.createCharts(index,this.crossContent,this.crossCnt,kind);
+
+        var promise = GetCrossData(this.cross1,this.cross2);
+        promise
+        .then((result) => {
+          this.crossContent = result.crossText;
+          this.crossCnt = result.crossCount;
+        })
+        .finally(() => {
+          this.$nextTick(() => {
+            this.createCharts(index,this.crossContent,this.crossCnt,kind);
+          })
         })
       }
     },
@@ -262,10 +274,16 @@ export default {
         };
       }
       else if(chartType == 'pie'){
-        
         let pieData = [];
-        for(i=0;i<this.questionList[id].optionContent.length;i++){
-          pieData.push({"value":this.questionList[id].optionCnt[i],"name":this.questionList[id].optionContent[i]});
+        if(id != -1){
+          for(i=0;i<this.questionList[id].optionContent.length;i++){
+            pieData.push({"value":this.questionList[id].optionCnt[i],"name":this.questionList[id].optionContent[i]});
+          }
+        }
+        else{
+          for(i=0;i<this.crossContent.length;i++){
+            pieData.push({"value":this.crossCnt[i],"name":this.crossContent[i]});
+          }
         }
         option = {
           series:[
@@ -394,7 +412,11 @@ export default {
   mounted(){
 
     this.questionnaireId = parseInt(this.$route.query.questionnaireId);
+    const internalInstance = getCurrentInstance()
+    const internalData = internalInstance.appContext.config.globalProperties
+    this.username = internalData.$cookies.get('username');
     this.flag = this.$route.query.flag;
+    this.isShare = this.$route.query.isShare;
 
     var promise = GetOtherData(this.questionnaireId);
     promise.then((result) => {
@@ -417,7 +439,6 @@ export default {
         }
       }
       console.log(this.questionList);
-
       this.url = window.location.href;
     })
   },

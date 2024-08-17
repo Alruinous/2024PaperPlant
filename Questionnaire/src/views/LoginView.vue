@@ -115,9 +115,11 @@
 
                 //判断是否要跳转到questioinnareFill界面
                 if(receivedQuestionnaireId != -1){
-                    router.push({path:'/questionnaireFill', query:{questionnaireId: receivedQuestionnaireId}});
+                    router.push({path:'/questionnaireFill', query:{questionnaireId: receivedQuestionnaireId, submissionId: -1}});
+                    console.log("jump to questionnaireFill")
                     return;
                 }
+                console.log("before gotoUserManage")
                 gotoUserManage();
             }
         })
