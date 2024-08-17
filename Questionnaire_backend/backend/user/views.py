@@ -1362,7 +1362,7 @@ def survey_statistics(request, surveyID):
                     optionText.append(option['Text'])
                     optionCount.append(ChoiceAnswer.objects.filter(Question=question['QuestionID'],ChoiceOptions=option['OptionID']).count())
 
-                questionList.append({'Content':question["Text"],'Text':optionText,'Count':optionCount,'type':question['Category']})
+                questionList.append({'Content':question["Text"],'Text':optionText,'Count':optionCount,'type':question['Category'],"questionId":question['QuestionID']})
 
                 print("lorian2")
                 
@@ -1380,7 +1380,7 @@ def survey_statistics(request, surveyID):
                     answerText.append(item['Content'])
                     answerCount.append(item['count'])
 
-                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category']})
+                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category'],"questionId":question['QuestionID']})
 
                 print("lorian3")
             
@@ -1393,7 +1393,7 @@ def survey_statistics(request, surveyID):
                     answerText.append(item['Rate'])
                     answerCount.append(item['count'])
 
-                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category']})
+                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category'],"questionId":question['QuestionID']})
 
                 print("lorian4")
                 
