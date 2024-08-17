@@ -395,6 +395,9 @@ def get_submission(request):
             duration=body['duration']  
             score=body['score'] 
 
+            # 新加的
+            publishDate=body['date']  #日期
+
             # print("lorian")
             # print(submissionID)
 
@@ -411,8 +414,9 @@ def get_submission(request):
             #当前不存在该填写记录，创建：  //实际上用不到，在getStoreFill的时候就给不存在的submission创建新的Id了
             if submissionID==-1:
                 submission=Submission.objects.create(Survey=survey,Respondent=user,
-                                             SubmissionTime=timezone.now(),Status=status,
+                                             SubmissionTime=timezone.now().date,Status=status,
                                              Interval=duration,Score=score)
+                print(submission.SubmissionTime)
             
             #已存在，删除填写记录的所有内容
             else:
@@ -442,7 +446,9 @@ def get_submission(request):
                     for ratingAnswer in RatingAnswer_query:
                         ratingAnswer.delete()
 
-            # print("lorian")
+            # 新加的
+            survey.PublishDate=publishDate
+            survey.save()
 
             for submissionItem in submissionList:
                 # print("TieZhu")
@@ -623,6 +629,10 @@ def save_qs_design(request):
             Is_released=body['Is_released'] #保存/发布
 
             questionList=body['questionList']   #问卷题目列表
+
+            # 新加的
+            publishDate=body['date'] #日期
+
             print(questionList)
             user=User.objects.get(username=username)
             if user is None:        
@@ -670,6 +680,10 @@ def save_qs_design(request):
                 ratingQuestion_query=RatingQuestion.objects.filter(Survey=survey)
                 for ratingQuestion in ratingQuestion_query:
                     ratingQuestion.delete()
+
+            # 新加的
+            survey.PublishDate=publishDate
+            survey.save()
 
             index=1
             for question in questionList:
@@ -846,7 +860,8 @@ def get_filled_qs(request,username):
                     status_Chinese="已提交"
                 else:
                     status_Chinese="已删除"
-                data_list.append({'Title':submission.Survey.Title,'PublishDate':submission.Survey.PublishDate,
+                # 新加的
+                data_list.append({'Title':submission.Survey.Title,'PublishDate':submission.SubmissionTime,
                                   'SurveyID':submission.Survey.SurveyID,'Category':submission.Survey.Category,
                                   'Description':submission.Survey.Description,'Status':status_Chinese,
                                   'SubmissionID':submission.SubmissionID})

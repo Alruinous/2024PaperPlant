@@ -46,7 +46,7 @@ class Survey(models.Model):
     Is_released = models.BooleanField(blank=True)
     Is_open = models.BooleanField(default=True)
     Is_deleted=models.BooleanField(default=False)
-
+    #新加的（把日期变为字符串）
     PublishDate = models.DateTimeField(null=True)
     #0 是普通问卷，1是投票问卷，2是报名问卷，3是考试问卷
     Category = models.IntegerField(default=0)   

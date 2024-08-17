@@ -237,6 +237,10 @@ const goToQuestionnaireDesignCopy = (questionnaireId, questionnaireType, flag) =
   });
 }
 
+const formatDate = (date) => {
+    return date.split('T')[0]; // 提取日期部分
+}
+
 
 
 </script>
@@ -292,7 +296,7 @@ const goToQuestionnaireDesignCopy = (questionnaireId, questionnaireType, flag) =
                         <!-- 上部分 -->
                         <div class="card-header">
                             <span class="textbutton">{{ questionnaire.Title }}</span>
-                            <span style="float: right" class="right">创建日期: {{ questionnaire.PublishDate }}</span>
+                            <span style="float: right" class="right">创建日期: {{ formatDate(questionnaire.PublishDate) }}</span>
                             <span style="float: right" class="right">ID: {{questionnaire.SurveyID}}</span>
                         </div>
 
