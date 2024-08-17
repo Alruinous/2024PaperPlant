@@ -148,6 +148,7 @@
             console.log("开始打印前callback");
           }
         },
+
       }
      },
      methods: {
@@ -248,9 +249,9 @@
             promise.then((result)=>{
               this.submissionId = result.submissionId;
               // 计算zhibi
-              console.log("questionnaireFill: result.message" + result.message)
-              if(result.message == "True") {
-                this.money += 50;
+              // console.log("questionnaireFill: result.message")
+              if(result.message == true) {
+                this.money = parseInt(this.money) + 50;
                 $cookies.set('money', this.money);
               }
 
@@ -261,12 +262,22 @@
           else if(status == 1 && this.type == 1){
             ElMessage.success("投票成功");
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0,this.submissionId,this.username, 0);
-            this.$router.push({path:'/dataPre',query:{questionnaireID:this.questionnaireId,flag:true}});
+            promise.then((result) => {
+              if(result.message == true) {
+                this.money = parseInt(this.money) + 50;
+                $cookies.set('money', this.money);
+              }
+              this.$router.push({path:'/dataPre',query:{questionnaireID:this.questionnaireId,flag:true}});
+            })
+            
           }
           else if(status == 1 && this.type == 2){
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0, this.submissionId,this.username, 0);
             promise.then((result) => {
-              if(result.message){
+              if(result.message == true){
+                this.money = parseInt(this.money) + 50;
+                $cookies.set('money', this.money);
+
                 ElMessage.success("报名成功");
                 this.$router.push("/userManage");
               }
@@ -286,6 +297,11 @@
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0, this.submissionId,this.username, 0);
             ElMessage.success("提交成功");
             promise.then((result)=>{
+              if(result.message == true) {
+                this.money = parseInt(this.money) + 50;
+                $cookies.set('money', this.money);
+              }
+
               this.submissionId = result.submissionId;      
               this.$router.push({path:'/normalAnswer',query:{questionnaireID:this.questionnaireId, submissionID:this.submissionId}}); 
             })
