@@ -7,6 +7,7 @@ import {
     Open,
     View,
     Printer,
+    Share,
 } from '@element-plus/icons-vue'
 
 import { ref } from 'vue'
@@ -271,6 +272,17 @@ const handleCreate = () => {
   createDialogVisible.value = false;
 };
 
+//分享问卷弹窗的变量
+const shareDialogVisible = ref(false)
+//点击创建问卷按钮时显示弹窗
+const showShareDialog = () => {
+    shareDialogVisible.value = true;
+};
+// 处理关闭弹窗事件
+const closeShareDialog = () => {
+  // 清空数据或其他操作
+  shareDialogVisible.value = false
+};
 
 
 //编辑问卷提示新开一个问卷
@@ -302,7 +314,27 @@ const formatDate = (date) => {
 }
 
 
+import { NQrCode } from 'naive-ui';
 
+// 定义要显示的网址
+var url = ref('https://www.baidu.com');
+
+// 复制到剪贴板的函数
+const copyToClipboard = async () => {
+  try {
+    // 使用 Clipboard API 复制内容
+    await navigator.clipboard.writeText(url.value);
+    alert('网址已复制到剪贴板!');
+  } catch (err) {
+    console.error('复制失败:', err);
+    alert('复制失败，请手动复制网址。');
+  }
+};
+
+const shareQuestionnaire = (SurveyID) => {
+    showShareDialog();
+    url.value = "http://localhost:8080/questionnaireFill?questionnaireId=" + SurveyID + "&submissionId=-1"
+}
 
 
 </script>
@@ -352,6 +384,7 @@ const formatDate = (date) => {
                             <el-button type="text" :icon="Link" class="otherbutton">发送问卷</el-button> -->
                             <el-button type="text" :icon="Odometer" class="otherbutton" @click="goToQuestionnaireData(questionnaire.SurveyID)">分析数据</el-button>
                             <el-button type="text" :icon="Printer" class="otherbutton" @click="goToQuestionnaireFill(questionnaire.SurveyID, 2)">导出问卷</el-button>
+                            <el-button type="text" :icon="Share" class="otherbutton" @click="shareQuestionnaire(questionnaire.SurveyID)">分享问卷</el-button>
                             <el-switch v-model="questionnaire.IsOpening" style="float: right; margin-left: 10px;--el-switch-on-color: #626aef;" @change="updateIsOpening(questionnaire.SurveyID)"  class="deletebutton"/>
                             <el-button type="danger" :icon="Delete" style="float: right" circle @click="deleteQs(questionnaire.SurveyID)"></el-button>
                         </div>
@@ -391,6 +424,26 @@ const formatDate = (date) => {
                     </div>
                 </div>
             </el-dialog>
+            <el-dialog width="800px" height="200px" center v-model="shareDialogVisible" @update:visible="val => shareDialogVisible = val" >
+                <div class="dialogfather1">
+                    <div class="dialogfont1">问卷链接与二维码</div>
+                    <div class="dialog1">
+                        <span><n-qr-code :value="url" error-correction-level="H"/></span>
+                        <!-- 只读输入框 -->
+                        <input
+                            type="text"
+                            :value="url"
+                            readonly
+                            class="url-input"
+                        />
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <!-- 复制按钮 -->
+                        <button @click="copyToClipboard" class="copy-button">
+                            复制网址
+                        </button>
+                    </div>
+                </div>
+            </el-dialog>
         </div>
         <!-- 分页条 -->
         <el-pagination :page-size="4"
@@ -399,6 +452,52 @@ const formatDate = (date) => {
     </el-card>
 </template>
 <style scoped>
+
+.url-input {
+  width: 300px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  margin-left: 10px;
+  margin-top: 50px;
+}
+
+.copy-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  margin-top: 50px;
+}
+
+.copy-button:hover {
+  background-color: rgb(42, 145, 255);
+}
+
+.dialogfather1{
+    display: flex; 
+    justify-content: center; 
+    /* align-items: center; */
+    flex-direction: column;
+    color: black;
+}
+
+.dialogfont1{
+    font-size: 30px;
+    font-weight: bold;
+    margin-left: 20px;
+}
+
+.dialog1{
+    margin-left: 20px;
+    display: flex; 
+    /* justify-content: center;  */
+    align-items: center;
+    margin-top: 10px;
+}
 
 .dialogfather{
     display: flex; 
