@@ -392,7 +392,7 @@ export default {
     //   }
     // }
 
-    this.questionnaireId = parseInt(this.$route.query.questionnaireID);
+    this.questionnaireId = parseInt(this.$route.query.questionnaireId);
     this.flag = this.$route.query.flag;
 
     console.log("Datapre");
