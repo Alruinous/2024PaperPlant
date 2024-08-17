@@ -1302,13 +1302,11 @@ def survey_statistics(request, surveyID):
 
 
         print("start survey_statistics")
-        print("lorian")
-        print(surveyID)
+        
         survey = Survey.objects.filter(SurveyID=surveyID).first()
-        print("lorian")
-        print(survey)
-
-        print("lorian")
+        print(survey.Title)
+        # print("lorian")
+        
         
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
                                                     ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID','MaxSelectable').all(),
@@ -1321,51 +1319,60 @@ def survey_statistics(request, surveyID):
         #print(all_questions_list.length())
         questionList=[]
         #print(all_questions)
-        
+        print("lorian")
         for question in all_questions_list:
             if question["Category"]==1 or question["Category"]==2:    #选择题
-                print(question)
-                    
+                # print("选择题")
+                # print(question)
+                 
                 #该问题的所有选项
-                all_options_iterator=itertools.chain(ChoiceOption.objects.filter(Question=question).values('OptionNumber','Text').all())
-                                  
-                all_options_list = list(all_options_iterator)
+                # all_options_iterator=itertools.chain(ChoiceOption.objects.filter(Question=question).values('OptionNumber','Text'))               
+                # all_options_list = list(all_options_iterator)
+
+                all_options_list = list(ChoiceOption.objects.filter(Question=question['QuestionID']).values('OptionID','OptionNumber','Text'))
                 all_options_list.sort(key=lambda x: x['OptionNumber']) 
 
                 optionCount=[]      #数组：选每个选项的人数
                 optionText=[]       #数组：每个选项的内容
                 for option in all_options_list:
                     optionText.append(option['Text'])
-                    optionCount.append(ChoiceAnswer.objects.filter(Question=question,ChoiceOptions=option).count())
+                    optionCount.append(ChoiceAnswer.objects.filter(Question=question['QuestionID'],ChoiceOptions=option['OptionID']).count())
 
                 questionList.append({'Content':question["Text"],'Text':optionText,'Count':optionCount})
+
+                print("lorian")
                 
                     
             elif question["Category"]==3:       #填空题
                 answerText=[]   #数组：填空的内容
                 answerCount=[]  #数组：填该内容的人数
 
-                text_counts = BlankAnswer.objects.filter(Question=question).values('Text').annotate(count=Count('Text'))
+                text_counts = BlankAnswer.objects.filter(Question=question['QuestionID']).values('Text').annotate(count=Count('Text'))
                 for item in text_counts:
                     answerText.append(item['Text'])
                     answerCount.append(item['count'])
 
                 questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount})
+
+                print("lorian")
             
             else:       #评分题
                 answerText=[]   #数组：评分的分数
                 answerCount=[]  #数组：该评分的人数
 
-                rate_counts=RatingAnswer.objects.filter(Question=question).values('Rate').annotate(count=Count('Rate'))
+                rate_counts=RatingAnswer.objects.filter(Question=question['QuestionID']).values('Rate').annotate(count=Count('Rate'))
                 for item in rate_counts:
                     answerText.append(item['Text'])
                     answerCount.append(item['count'])
 
                 questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount})
+
+                print("lorian")
                 
+        print(questionList)
 
         #传回题干和填写记录的统计数据
-        data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
+        data={'title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
             'description':survey.Description,'questionList':questionList}
         return JsonResponse(data)
     
