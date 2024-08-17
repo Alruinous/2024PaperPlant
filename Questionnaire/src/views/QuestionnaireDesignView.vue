@@ -326,9 +326,9 @@ const router = useRouter();
       isDisorder:false,
       description:'',
       timeLimit:0,
-      description:'问卷描述',
+      description:'添加问卷描述',
       desIsEditing:false,
-      destext:'问卷描述',
+      destext:'添加问卷描述',
       flag:0,//如果flag为1则代表该问卷是点击已发布再编辑
     }
    },
