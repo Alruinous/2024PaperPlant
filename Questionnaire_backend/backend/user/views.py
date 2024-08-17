@@ -1123,11 +1123,11 @@ def send_registration_email(request):
         password=body['password']
         email=body['email']
 
-        print(username)
-        print(email)
+        # print(username)
+        # print(email)
 
         if(email==False):
-            print("!")
+            # print("!")
             user_queryset=User.objects.filter(username=username)
             user=user_queryset.first()
             #return HttpResponse(status=200,content=username)
@@ -1153,7 +1153,7 @@ def send_registration_email(request):
 
         user1=User.objects.filter(username=username)
         if user1.exists():
-            print("!")
+            # print("!")
             data={
                 'message': "same username",
             }
@@ -1161,7 +1161,7 @@ def send_registration_email(request):
         
         user2=User.objects.filter(email=email)
         if user2.exists():
-            print("!!")
+            # print("!!")
             data={
                 'message': "same email",
             }
