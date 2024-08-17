@@ -209,8 +209,6 @@ def display_answer_test(request,username,questionnaireId,submissionId):
     return JsonResponse(data)
 
 
-
-
 #问卷填写界面：向前端传输问卷当前暂存的填写记录
 class GetStoreFillView(APIView):
     def get(self, request, *args, **kwargs):  
@@ -423,7 +421,7 @@ def get_submission(request):
             #当前不存在该填写记录，创建：  //实际上用不到，在getStoreFill的时候就给不存在的submission创建新的Id了
             if submissionID==-1:
                 submission=Submission.objects.create(Survey=survey,Respondent=user,
-                                             SubmissionTime=timezone.now().date,Status=status,
+                                             SubmissionTime=timezone.now(),Status=status,
                                              Interval=duration,Score=score)
                 print(submission.SubmissionTime)
             
@@ -435,6 +433,7 @@ def get_submission(request):
                 submission.Score=score
                 submission.Status=status
                 submission.Interval=duration
+                submission.SubmissionTime=timezone.now()    #更新为当前时间
                 submission.save()
                 
                 #所有选择题的填写记录
@@ -1124,8 +1123,11 @@ def send_registration_email(request):
         password=body['password']
         email=body['email']
 
+        print(username)
+        print(email)
 
         if(email==False):
+            print("!")
             user_queryset=User.objects.filter(username=username)
             user=user_queryset.first()
             #return HttpResponse(status=200,content=username)
@@ -1151,7 +1153,19 @@ def send_registration_email(request):
 
         user1=User.objects.filter(username=username)
         if user1.exists():
-            return HttpResponse(status=200,content=False)
+            print("!")
+            data={
+                'message': "same username",
+            }
+            return JsonResponse(data)
+        
+        user2=User.objects.filter(email=email)
+        if user2.exists():
+            print("!!")
+            data={
+                'message': "same email",
+            }
+            return JsonResponse(data)
 
         #创建新用户(尚未邮箱验证,非有效用户)
         user=User.objects.create(username=username,email=email,
@@ -1174,8 +1188,10 @@ def send_registration_email(request):
         #email.attach_file('/images/weather_map.png')
         email.send()
 
-        return HttpResponse("请查看邮箱，按照提示激活账户。"
-                                "(验证链接只在一小时内有效).")
+        data={
+            'message': "register success",
+        }
+        return JsonResponse(data)
     return HttpResponse(status=200,content=True)
 
 #用户点击邮箱链接,调用视图activate_user(),验证激活用户:
@@ -1205,24 +1221,26 @@ def cross_analysis(request, QuestionID1, QuestionID2):
         if QuestionID1 is None or QuestionID2 is None:
             return JsonResponse({'error': 'Missing QuestionID(s)'}, status=404)
         
-        if question1.Survey is not question2.Survey:
+        if question1.Survey.SurveyID != question2.Survey.SurveyID:
             return JsonResponse({'error': 'Two questions are not from the same questionnaire.'}, status=404)
         
         if question1.Category!=1 and question1.Category!=2:
+            print("3")
             return JsonResponse({'error':'Question1 is not a choice question.'},status=404)
         
         if question2.Category!=1 and question2.Category!=2:
+            print("4")
             return JsonResponse({'error':'Question2 is not a choice question.'},status=404)
         
 
         #问题1的所有选项
-        all_options_iterator_1=itertools.chain(ChoiceOption.objects.filter(Question=question1).values('OptionNumber','Text').all())
+        all_options_iterator_1=itertools.chain(ChoiceOption.objects.filter(Question=question1).values('OptionID','OptionNumber','Text').all())
                                   
         all_options_list_1 = list(all_options_iterator_1)
         all_options_list_1.sort(key=lambda x: x['OptionNumber']) 
 
         #问题2的所有选项
-        all_options_iterator_2=itertools.chain(ChoiceOption.objects.filter(Question=question2).values('OptionNumber','Text').all())
+        all_options_iterator_2=itertools.chain(ChoiceOption.objects.filter(Question=question2).values('OptionID','OptionNumber','Text').all())
                                   
         all_options_list_2 = list(all_options_iterator_2)
         all_options_list_2.sort(key=lambda x: x['OptionNumber']) 
@@ -1233,77 +1251,146 @@ def cross_analysis(request, QuestionID1, QuestionID2):
         for option1 in all_options_list_1:
             for option2 in all_options_list_2:
                 crossText.append('-'.join([option1['Text'],option2['Text']]))
-                crossCount.append('-'.join([str(ChoiceAnswer.objects.filter(Question=question1,ChoiceOptions=option1).count()),
-                                            ChoiceAnswer.objects.filter(Question=question2,ChoiceOptions=option2).count()]))
-
+                print("莫问题")
+                # crossCount.append('-'.join([str(ChoiceAnswer.objects.filter(Question=question1,ChoiceOptions=option1['OptionID']).count()),
+                #                             str(ChoiceAnswer.objects.filter(Question=question2,ChoiceOptions=option2['OptionID']).count())]))
+                submission_option1 = ChoiceAnswer.objects.filter(Question=question1,ChoiceOptions=option1['OptionID']).values_list('Submission', flat=True).distinct()
+                cnt = ChoiceAnswer.objects.filter(Submission__in=submission_option1,Question=question2,ChoiceOptions=option2['OptionID']).count()
+                crossCount.append(cnt)
+        print(crossCount)
+        print(crossText)
         data={'crossCount':crossCount,'crossText':crossText}
         
         return JsonResponse(data)
 
 #下载表格
+from openpyxl import Workbook
+import datetime
+from urllib.parse import quote  
+
 def download_submissions(request, surveyID):
     if request.method == 'GET':
-        survey = Submission.objects.filter(Survey__SurveyID=surveyID).first().Survey
-        submissions = Submission.objects.filter(Survey__SurveyID=surveyID, Status__in=['Submitted', 'Graded'])
+        try:
+            print("-here")
+            survey = Survey.objects.get(SurveyID=surveyID)
+            if survey is None:
+                return HttpResponse(content='Questionniare not found.', status=404)  
+            print(survey)
 
-        data = {
-            '填写者': [],
-            '提交时间': [],
-        }
+            wb = Workbook()
+            wb.encoding='utf-8'
+            ws=wb.active    #获取第一个工作表
 
-        if survey.Category == '3':
-            data['分数'] = []
-            
 
-        all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
-                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
-                                                    RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())
+            #第一行内容
+            content=['填写者','提交答卷时间','所用时间']
+            ws.cell(1,1).value='填写者'
+            ws.cell(1,2).value='提交答卷时间'
+            ws.cell(1,3).value='所用时间'
+
+            #该问卷的所有问题
+            all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
+                                                        ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
+                                                        RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())
                                                     
-        # 将迭代器转换为列表  
-        questions = list(all_questionList_iterator)
-        questions.sort(key=lambda x: x['QuestionNumber']) 
+            # 将迭代器转换为列表  
+            all_questions_list = list(all_questionList_iterator)
+            all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
+
+            for i in range(0,len(all_questions_list)):
+                question=all_questions_list[i]
+                ws.cell(1,i+4,'、'.join([str(i+1),question['Text']])).value='、'.join([str(i+1),question['Text']])    #题号+题干
+
+            #找出该问卷的所有已提交/已打分的填写记录，按提交时间从前向后排序
+            submission_list=list(Submission.objects.filter(Survey=survey, Status__in=['Submitted', 'Graded']).values(
+                'SubmissionID','SubmissionTime','Respondent','Survey'
+            ))
+            if len(submission_list)==0:
+                return HttpResponse(content='No submission records available.',status=404)
         
+            submission_list.sort(key=lambda x: x['SubmissionTime'])   
 
-        for q in questions:
-            if q["Category"] < 3:
-                question = ChoiceQuestion.objects.get(QuestionID=q["QuestionID"])
-            elif q["Category"] == 3:
-                question = BlankQuestion.objects.get(QuestionID=q["QuestionID"])
-            elif q["Category"] == 4:
-                question = RatingQuestion.objects.get(QuestionID=q["QuestionID"])
-            data[question.Text] = []
+            sub_index=1
+            ques_index=3
+            for submission in submission_list:
+                sub_index+=1
+                user=User.objects.get(UserID=submission['Respondent'])
+                ws.cell(sub_index,1).value=user.username
 
+                ws.cell(sub_index,2).value=submissionTime=submission['SubmissionTime'].strftime('%Y-%m-%d %H:%M:%S')
+            
+                if survey.Category==3:  #考试问卷：所用时间为Duration；其他问卷：'--'
+                    ws.cell(sub_index,3).value=submission.Interval
+                else:
+                    ws.cell(sub_index,3).value='--'
+            
+                ques_index=3
+                for question in all_questions_list:
+                    ques_index+=1
 
-        for submission in submissions:
-            data['填写者'].append(submission.Respondent.username)
-            data['提交时间'].append(submission.SubmissionTime.date)
+                    print(question['Category'])
+                    if question['Category']==1 or question['Category']==2:
+                        #该题的所有选项
+                        all_options_answer_list=list(ChoiceAnswer.objects.filter(Question=question['QuestionID'],Submission=submission['SubmissionID'])
+                                                      .values('ChoiceOptions'))
 
-            if survey.Category == '3':
-                data['分数'].append(submission.Score)
+                        if len(all_options_answer_list)==0:   #没有选择选项
+                            ws.cell(sub_index,ques_index).value=' '
 
-            all_answer = itertools.chain(BlankAnswer.objects.filter(Submission=submission).values('AnswerID').all(),
-                                         ChoiceAnswer.objects.filter(Submission=submission).values('AnswerID').all(),
-                                         RatingAnswer.objects.filter(Submission=submission).values('AnswerID').all())
-                                                    
-            answers = list(all_answer)
+                        else: 
+                            optionNumberList=[]
+                            for answer in all_options_answer_list:
+                                print('***')
+                                option=ChoiceOption.objects.filter(OptionID=answer['ChoiceOptions']).first()
+                                optionNumberList.append(str(option.OptionNumber))
+                            optionNumberList.sort()     #选项顺序升序排列
+                            print(optionNumberList)
 
-            for a in answers:
-                if ChoiceAnswer.objects.filter(AnswerID=a["AnswerID"]).exists():
-                    answer = ChoiceAnswer.objects.get(AnswerID=a["AnswerID"])
-                    choices = [chr(ord('A') + answer.ChoiceOptions.OptionNumber - 1)]
-                    data[answer.Question.Text].append(', '.join(choices))
+                            ws.cell(sub_index,ques_index).value=','.join(optionNumberList)
                     
-                elif BlankAnswer.objects.filter(AnswerID=a["AnswerID"]).exists():
-                    answer = BlankAnswer.objects.get(AnswerID=a["AnswerID"])
-                    data[answer.Question.Text].append(answer.Content)
-                    
-                elif RatingAnswer.objects.filter(AnswerID=a["AnswerID"]).exists():
-                    answer = RatingAnswer.objects.get(AnswerID=a["AnswerID"])
-                    data[answer.Question.Text].append(answer.Rate)
+                    elif question['Category']==3:      #填空题
+                        answer=BlankAnswer.objects.get(Question=question['QuestionID'],Submission=submission['SubmissionID'])
+                        if answer is None:   
+                            ws.cell(sub_index,ques_index).value=' '
+                        else: 
+                            ws.cell(sub_index,ques_index).value=answer.Content
+
+                    else:           #评分题
+                        answer=RatingAnswer.objects.get(Question=question['QuestionID'],Submission=submission['SubmissionID'])
+                        if answer is None:   
+                            ws.cell(sub_index,ques_index).value=' '
+                        else: 
+                            ws.cell(sub_index,ques_index).value=answer.Rate
+
+                if survey.Category==3:      #考试问卷：增加该填写记录的总得分
+                    ws.cell(sub_index,ques_index).value=submission.Score
+
+            print('finished')
+            # 准备写入到IO中
+            output = BytesIO()
+            #ws.save()
+            wb.save(output)     #Excel文件内容保存到IO中
+
+            output.seek(0)	 # 重新定位到开始
+
+            # 设置HttpResponse的类型
+            response = HttpResponse(output.getvalue(), content_type='application/vnd.ms-excel')
+            formatted_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            file_name = '-'.join([survey.Title, '填写记录统计']) + '_' + formatted_now + '.xlsx' 
+            print(file_name)
+
+            file_name = quote(file_name)	 # 使用urlquote()方法解决中文无法使用的问题
+            response['Content-Disposition'] = 'attachment; filename=%s' % file_name
+            print(response)
+            return response
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({'message': '导出表格失败!'})
 
 
-        df = pd.DataFrame(data)
-        output = BytesIO()
+
+
     # 创建Excel writer对象
         writer = pd.ExcelWriter(output, engine='openpyxl')
 
@@ -1423,87 +1510,3 @@ def survey_statistics(request, surveyID):
             'description':survey.Description,'questionList':questionList}
         return JsonResponse(data)
     
-    
-    '''
-        ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
-        RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())                              
-        # 将迭代器转换为列表  
-        questions = list(all_questionList_iterator)
-        questions.sort(key=lambda x: x['QuestionNumber']) 
-
-        print("lorian")
-        #题目信息
-        for q in questions:
-            if q["Category"] < 3:
-                question = ChoiceQuestion.objects.get(QuestionID=q["QuestionID"])
-            elif q["Category"] == 3:
-                question = BlankQuestion.objects.get(QuestionID=q["QuestionID"])
-            elif q["Category"] == 4:
-                question = RatingQuestion.objects.get(QuestionID=q["QuestionID"])
-            
-            q_stats = {
-                'type': question.Category,
-                'questionId': question.QuestionID,
-                'question': question.Text,
-                'number': question.QuestionNumber,
-                'is_required': question.IsRequired,
-                'score': question.Score if survey.Category == '3' else None,
-                'correct_answer': None,
-                'correct_count': 0,
-                'options_stats': [],
-                'rating_stats': [],
-                'blank_stats': []
-            }
-
-            print(q)
-    
-            #答案信息
-            if question.Category < 3:
-                for option in question.choice_options.all():
-                    option_stats = {
-                        'number': option.OptionNumber,
-                        'is_correct': option.IsCorrect,
-                        'optionContent': option.Text,
-                        'optionCnt': ChoiceAnswer.objects.filter(Question=question, ChoiceOptions=option).count()
-                    }
-                    q_stats['options_stats'].append(option_stats)
-                
-                correct_option_numbers = [option.Number for option in question.choice_options.filter(IsCorrect=True)]
-                q_stats['correct_answer'] = correct_option_numbers
-                
-                correct_submissions = set()
-                for correct_number in correct_option_numbers:
-                    submissions_with_correct_option = ChoiceAnswer.objects.filter(
-                        Question=question,
-                        ChoiceOptions__Number=correct_number
-                    ).values_list('Submission', flat=True)
-    
-                    # 更新完全正确回答的提交集合
-                    if not correct_submissions:
-                        correct_submissions = set(submissions_with_correct_option)
-                    else:
-                        correct_submissions.intersection_update(submissions_with_correct_option)
-
-                q_stats['correct_count'] = len(correct_submissions)
-            
-            elif question.Category == 4:
-                ratings = RatingAnswer.objects.filter(Question=question).values('rate').annotate(count=Count('rate'))
-                for rating in ratings:
-                    q_stats['rating_stats'].append({
-                        'optionContent': rating['rate'],
-                        'optionCnt': rating['count']
-                    })
-    
-            elif question.Category == 3:  
-                answers = BlankAnswer.objects.filter(Question=question).values('content').annotate(count=Count('content'))
-                for answer in answers:
-                    q_stats['blank_stats'].append({
-                        'fill': answer['content'],
-                        'cnt': answer['count']
-                    })
-                    
-            stats['questionList'].append(q_stats)
-        return JsonResponse(stats)
-    print("lorian end")
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
-    '''

@@ -74,9 +74,21 @@
         //传给后端
         var promise = postUserMessage(registerData.value.username, registerData.value.password, registerData.value.email);
         promise.then((result)=>{
-            //跳转到登陆界面，等待用户登陆邮箱验证，注册成功在邮箱中显示
-            ElMessage.success("请前往邮箱验证后登录");
-            isLogin.value = 1;
+            console.log("start register")
+            console.log(result.message)
+            if(result.message == "same username") {
+                ElMessage.error("用户名已存在");
+                return;
+            }
+            else if(result.message == "same email") {
+                ElMessage.error("邮箱已存在");
+                return;
+            }
+            else {
+                //跳转到登陆界面，等待用户登陆邮箱验证，注册成功在邮箱中显示
+                ElMessage.success("请前往邮箱验证后登录");
+                isLogin.value = 1;
+            }
         })
     }
 
@@ -115,9 +127,11 @@
 
                 //判断是否要跳转到questioinnareFill界面
                 if(receivedQuestionnaireId != -1){
-                    router.push({path:'/questionnaireFill', query:{questionnaireId: receivedQuestionnaireId}});
+                    router.push({path:'/questionnaireFill', query:{questionnaireId: receivedQuestionnaireId, submissionId: -1}});
+                    console.log("jump to questionnaireFill")
                     return;
                 }
+                console.log("before gotoUserManage")
                 gotoUserManage();
             }
         })
