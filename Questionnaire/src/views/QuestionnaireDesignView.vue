@@ -203,7 +203,9 @@
                     <el-tooltip content="正确答案" placement="right">
                       <el-switch v-if="type==3" v-model="questionList[index-1].optionList[index2-1].isCorrect" @change="checkAnswer(1,index-1,index2-1)"/>
                     </el-tooltip>
-                    <el-input-number v-if="type==2 && questionList[index-1].isNecessary" v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>
+                    <div v-if="type == 2 && questionList[index-1].isNecessary">
+                      人数限额：<el-input-number v-model="questionList[index-1].optionList[index2-1].MaxSelectablePeople" size="small" :min="1" controls-position="right"/>
+                    </div>
                   </n-popover>
                 </van-checkbox>
                 <br/>

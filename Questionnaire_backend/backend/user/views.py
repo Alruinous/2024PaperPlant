@@ -1343,7 +1343,7 @@ def survey_statistics(request, surveyID):
         #print(all_questions_list.length())
         questionList=[]
         #print(all_questions)
-        print("lorian")
+        print("lorian1")
         for question in all_questions_list:
             if question["Category"]==1 or question["Category"]==2:    #选择题
                 # print("选择题")
@@ -1362,23 +1362,27 @@ def survey_statistics(request, surveyID):
                     optionText.append(option['Text'])
                     optionCount.append(ChoiceAnswer.objects.filter(Question=question['QuestionID'],ChoiceOptions=option['OptionID']).count())
 
-                questionList.append({'Content':question["Text"],'Text':optionText,'Count':optionCount})
+                questionList.append({'Content':question["Text"],'Text':optionText,'Count':optionCount,'type':question['Category']})
 
-                print("lorian")
+                print("lorian2")
                 
                     
             elif question["Category"]==3:       #填空题
                 answerText=[]   #数组：填空的内容
                 answerCount=[]  #数组：填该内容的人数
 
-                text_counts = BlankAnswer.objects.filter(Question=question['QuestionID']).values('Text').annotate(count=Count('Text'))
+
+                print("www")
+                #text_list=list(BlankAnswer.objects.filter(Question=question['QuestionID']).values('Content'))
+
+                text_counts = BlankAnswer.objects.filter(Question=question['QuestionID']).values('Content').annotate(count=Count('Content'))
                 for item in text_counts:
                     answerText.append(item['Text'])
                     answerCount.append(item['count'])
 
-                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount})
+                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category']})
 
-                print("lorian")
+                print("lorian3")
             
             else:       #评分题
                 answerText=[]   #数组：评分的分数
@@ -1389,9 +1393,9 @@ def survey_statistics(request, surveyID):
                     answerText.append(item['Text'])
                     answerCount.append(item['count'])
 
-                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount})
+                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category']})
 
-                print("lorian")
+                print("lorian4")
                 
         print(questionList)
 

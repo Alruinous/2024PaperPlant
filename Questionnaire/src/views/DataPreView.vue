@@ -17,7 +17,7 @@
               <n-tabs type="line" size="medium" @update:value="changeBar(value)" animated>
                 <n-tab-pane name="dataAnalysis" tab="数据分析">
                   <div  id="dataAnalysis">
-                  <div v-for="index in questionCnt"  style="margin-left: 2%;">
+                  <div v-for="index in questionList.length"  style="margin-left: 2%;">
       
                     <!-- TieZhu:
                     对于单选/多选/评分：
@@ -25,7 +25,7 @@
                         type：标识题目类型
                         question：题干
                         optionCnt：一个数组。选择对应选项的人数。
-                        optionContent：选项内容数组。对于评分题为：[1,2,3,4,5]
+                        optionContent：选项内容数组。对于评分题为：[0,1,2,3,4,5]
                         hasChart:是否有图表显示
                     对于填空：
                       quetionList有如下属性:
@@ -62,7 +62,8 @@
                           {{ questionList[index-1].question }}
                       </div>
                       <div class="qstype">[多选题]</div>
-                      <br/><div class="row"></div>                  <el-button @click="toggleChart(index-1,'bar')" style="color: #409EFF;" plain>柱状图</el-button>
+                      <br/><div class="row"></div>
+                      <el-button @click="toggleChart(index-1,'bar')" style="color: #409EFF;" plain>柱状图</el-button>
                       <el-button @click="toggleChart(index-1,'pie')" style="color: #409EFF;" plain>饼状图</el-button>
                       <el-button @click="toggleChart(index-1,'line')" style="color: #409EFF;" plain>折线图</el-button>
                       <br/>
@@ -277,8 +278,8 @@ export default {
       }
       else{
         let wordData = [];
-        for(i=0;i<this.questionList[id].fill.length;i++){
-          wordData.push({"value":this.questionList[id].cnt[i],"name":this.questionList[id].fill[i]});
+        for(i=0;i<this.questionList[id].optionContent.length;i++){
+          wordData.push({"value":this.questionList[id].optionCnt[i],"name":this.questionList[id].optionContent[i]});
         }
         
         option = {
@@ -322,26 +323,26 @@ export default {
       });
     },
 
-    //TieZhu:添加单选题
-    addSingle(){
-        this.questionCnt++;
-        this.questionList.push({"type":1,"question":"os难吗","hasChart":false,"optionCnt":[5,2,3,4],"optionContent":["11","22","33","44"]});
-    },
-    //TieZhu:添加多选题
-    addMultiple(){
-        this.questionCnt++;
-        this.questionList.push({"type":2,"question":"请选择以下选项（多选）","hasChart":false,"optionCnt":[5,2,6,4],"optionContent":["11","22","33","44"]});
-    },
-    //TieZhu:添加填空题
-    addFill(){
-        this.questionCnt++;
-        this.questionList.push({"type":3,"question":"请填空","hasChart":false,"fill":["铁柱","翠花","大壮","二狗"],"cnt":[1,2,1,1]});
-    },
-    //TieZhu:添加评分题
-    addScore(){
-        this.questionCnt++;
-        this.questionList.push({"type":4,"question":"给os打个分吧","hasChart":false,"optionCnt":[0,2,6,4,5],"optionContent":[1,2,3,4,5]});
-    },
+    // //TieZhu:添加单选题
+    // addSingle(){
+    //     this.questionCnt++;
+    //     this.questionList.push({"type":1,"question":"os难吗","hasChart":false,"optionCnt":[5,2,3,4],"optionContent":["11","22","33","44"]});
+    // },
+    // //TieZhu:添加多选题
+    // addMultiple(){
+    //     this.questionCnt++;
+    //     this.questionList.push({"type":2,"question":"请选择以下选项（多选）","hasChart":false,"optionCnt":[5,2,6,4],"optionContent":["11","22","33","44"]});
+    // },
+    // //TieZhu:添加填空题
+    // addFill(){
+    //     this.questionCnt++;
+    //     this.questionList.push({"type":3,"question":"请填空","hasChart":false,"fill":["铁柱","翠花","大壮","二狗"],"cnt":[1,2,1,1]});
+    // },
+    // //TieZhu:添加评分题
+    // addScore(){
+    //     this.questionCnt++;
+    //     this.questionList.push({"type":4,"question":"给os打个分吧","hasChart":false,"optionCnt":[0,2,6,4,5],"optionContent":[1,2,3,4,5]});
+    // },
     //当页面切换时，更换下载和分享的内容
     changeBar(value){
       this.isCross = !this.isCross;
@@ -395,15 +396,10 @@ export default {
     this.questionnaireId = parseInt(this.$route.query.questionnaireId);
     this.flag = this.$route.query.flag;
 
-    console.log("Datapre");
-    console.log(this.questionnaireId);
-
     var promise = GetOtherData(this.questionnaireId);
     promise.then((result) => {
       this.questionList = result.questionList;
       this.title = result.title;
-      console.log(result.title)
-      console.log(this.questionList);
       let i = 0;
       for(i = 0;i < this.questionList.length;i++){
         this.questionList[i].hasChart = ref(false);
@@ -416,9 +412,6 @@ export default {
       this.url = window.location.href;
     })
   },
-  created(){
-    
-  }
 };
 </script>
 
