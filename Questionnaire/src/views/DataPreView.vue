@@ -134,6 +134,7 @@
                       <br/>
                       <div style="margin-left: 2%; margin-right: 2%;">
                         <el-button @click="toggleChart(-1,'bar')" style="color: #409EFF;" plain>柱状图</el-button>
+                        <el-button @click="toggleChart(-1,'pie')" style="color: #409EFF;" plain>饼状图</el-button>
                         <el-button @click="toggleChart(-1,'line')" style="color: #409EFF;" plain>折线图</el-button>
                       </div>
                     </n-collapse-transition>
@@ -237,8 +238,6 @@ export default {
         }
         this.crossHasChart = true;
 
-        console.log(this.cross1);
-        console.log(this.cross2);
         var promise = GetCrossData(this.cross1,this.cross2);
         promise
         .then((result) => {
@@ -275,10 +274,16 @@ export default {
         };
       }
       else if(chartType == 'pie'){
-        
         let pieData = [];
-        for(i=0;i<this.questionList[id].optionContent.length;i++){
-          pieData.push({"value":this.questionList[id].optionCnt[i],"name":this.questionList[id].optionContent[i]});
+        if(id != -1){
+          for(i=0;i<this.questionList[id].optionContent.length;i++){
+            pieData.push({"value":this.questionList[id].optionCnt[i],"name":this.questionList[id].optionContent[i]});
+          }
+        }
+        else{
+          for(i=0;i<this.crossContent.length;i++){
+            pieData.push({"value":this.crossCnt[i],"name":this.crossContent[i]});
+          }
         }
         option = {
           series:[
