@@ -11,6 +11,8 @@ import {
 
 import { ref } from 'vue'
 import store from '../../store';
+import {ElMessageBox, ElMessage} from 'element-plus'
+import {GetReleasedQs, UpdateOrDelete} from '../../api/questionnaire.js'
 
 const value1 = ref(true)
 //文章分类数据模型
@@ -120,15 +122,22 @@ const goToQuestionnaireFill = (questionnaireId, flag) => {
     }
   });
 }
-const goToQuestionnaireData = (questionnaireId) => {
+const goToQuestionnaireData = (questionnaireId, FilledPeople) => {
+    if(FilledPeople == 0) {
+        ElMessage({
+            type: "error",
+            message: "暂时还没有人填问卷~",
+        })
+        return;
+    }
     console.log("goToQuestionnaireData")
     console.log(questionnaireId)
-  r.push({
-    path: '/dataPre',
-    query: {
-      questionnaireId: questionnaireId
-    }
-  });
+    r.push({
+        path: '/dataPre',
+        query: {
+        questionnaireId: questionnaireId
+        }
+    });
 }
 
 
@@ -148,8 +157,7 @@ username.value = internalData.$cookies.get('username') // 后面的为之前设�
 
 
 
-import {ElMessageBox, ElMessage} from 'element-plus'
-import {GetReleasedQs, UpdateOrDelete} from '../../api/questionnaire.js'
+
 
 const flag = ref(true);
 
@@ -350,7 +358,7 @@ const formatDate = (date) => {
                             <el-button type="text" :icon="Edit" @click="reviseQuestionnaire(questionnaire.SurveyID, questionnaire.Category)" :disabled="questionnaire.IsOpening" class="thebutton">编辑问卷</el-button>
                             <!-- <el-button type="text" :icon="View" @click="goToQuestionnaireFill(questionnaire.SurveyID, 1)" class="otherbutton">预览</el-button>
                             <el-button type="text" :icon="Link" class="otherbutton">发送问卷</el-button> -->
-                            <el-button type="text" :icon="Odometer" class="otherbutton" @click="goToQuestionnaireData(questionnaire.SurveyID)">分析数据</el-button>
+                            <el-button type="text" :icon="Odometer" class="otherbutton" @click="goToQuestionnaireData(questionnaire.SurveyID, questionnaire.FilledPeople)">分析数据</el-button>
                             <el-button type="text" :icon="Printer" class="otherbutton" @click="goToQuestionnaireFill(questionnaire.SurveyID, 2)">导出问卷</el-button>
                             <el-switch v-model="questionnaire.IsOpening" style="float: right; margin-left: 10px;--el-switch-on-color: #626aef;" @change="updateIsOpening(questionnaire.SurveyID)"  class="deletebutton"/>
                             <el-button type="danger" :icon="Delete" style="float: right" circle @click="deleteQs(questionnaire.SurveyID)"></el-button>
