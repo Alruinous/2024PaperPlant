@@ -388,6 +388,12 @@ const router = useRouter();
     //TieZhu:添加单选题
     addSingle(){
       this.questionCnt++;
+      if(this.type == 2){
+        this.questionList.push({"type":1,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择一个选项","text":"请选择一个选项",
+        "optionCnt":1,"isDisabled":true,"max":1,"score":0,
+        "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":ref(false),"MaxSelectablePeople":ref(1)}]});
+        return;
+      }
       this.questionList.push({"type":1,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择一个选项","text":"请选择一个选项",
       "optionCnt":1,"isDisabled":true,"max":1,"score":0,
       "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":ref(false),"MaxSelectablePeople":ref(-1)}]});
@@ -395,6 +401,11 @@ const router = useRouter();
     //TieZhu:添加多选题
     addMultiple(){
       this.questionCnt++;
+      if(this.type == 2){
+        this.questionList.push({"type":2,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择以下选项（多选）","text":"请选择以下选项（多选）",
+        "optionCnt":1,"isDisabled":true,"max":1,"score":0,
+        "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false,"MaxSelectablePeople":ref(1)}]});
+      }
       this.questionList.push({"type":2,"showToolbar":false,"isNecessary":true,"qsIsEditing":false,"question":"请选择以下选项（多选）","text":"请选择以下选项（多选）",
       "optionCnt":1,"isDisabled":true,"max":1,"score":0,
       "optionList":[{"showBar":false,"isEditing":false,"content":"选项","text":"选项","isCorrect":false,"MaxSelectablePeople":ref(-1)}]});
@@ -582,10 +593,12 @@ const router = useRouter();
         this.warning("不能保存空的问卷")
         return;
       }
+      console.log(this.questionList);
       var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,false);
       this.$router.push({path:'/userManage/filled'});
       this.success("保存成功");
     },
+
     //发布问卷
     releaseQuestionnaire(){
       if(this.flag==1){
@@ -595,6 +608,8 @@ const router = useRouter();
         this.warning("不能发布空的问卷");
         return;
       }
+      console.log(this.questionList);
+      console.log(this.questionList[0].optionList[0].MaxSelectablePeople);
       var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,true);
       this.$router.push({path:'/userManage/filled'});
       this.success("发布成功");
@@ -635,8 +650,8 @@ const router = useRouter();
           this.questionList[i].text = this.questionList[i].question;
           if(this.questionList[i].type <= 2){
             for(j = 0;j < this.questionList[i].optionCnt;j++){
-            this.questionList[i].optionList[j].text = this.questionList[i].optionList[j].content;
-            this.questionList[i].optionList[j].isEditing = false;
+              this.questionList[i].optionList[j].text = this.questionList[i].optionList[j].content;
+              this.questionList[i].optionList[j].isEditing = false;
             }
           }
         }
