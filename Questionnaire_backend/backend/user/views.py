@@ -1,3 +1,4 @@
+import random
 from django.shortcuts import render
 from django.http import JsonResponse
 
@@ -344,6 +345,10 @@ class GetStoreFillView(APIView):
                 for option in options_query:
                     optionList.append({'content':option.Text,'optionNumber':option.OptionNumber,'isCorrect':option.IsCorrect,
                                        'optionId':option.OptionID,'MaxSelectablePeople':option.MaxSelectablePeople})
+                
+                if survey.Category == 3 and survey.IsOrder == False: #选项乱序展示
+                    random.shuffle(optionList)
+                
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'optionCnt':question["OptionCnt"],
                                      'optionList':optionList,'Answer':answer,'max':question['MaxSelectable']})
@@ -373,11 +378,15 @@ class GetStoreFillView(APIView):
 
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'Answer':answer})
-
+        
+        #题干乱序展示
+        if survey.Category == 3 and survey.IsOrder == False:
+            random.shuffle(questionList)
 
         #传回题干和填写记录
         data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
             'description':survey.Description,'questionList':questionList,'duration':submission.Interval, 'submissionID':submissionID}
+        
         return JsonResponse(data)
         
 
@@ -1322,19 +1331,7 @@ def survey_statistics(request, surveyID):
         survey = Survey.objects.filter(SurveyID=surveyID).first()
         print("lorian")
         print(survey)
-        survey_stat = SurveyStatistic.objects.filter(Survey=survey).first()
-        print("lorian")
-        print(survey_stat)
-        #问卷基础信息
-        stats = {
-            'title': survey.Title,
-            'description': survey.Description,
-            'category': survey.Category,
-            'total_submissions': survey_stat.TotalResponses,
-            # 'max_participants': survey.QuotaLimit if survey.QuotaLimit else None,
-            'average_score': survey_stat.AverageScore,
-            'questionList': []
-        }
+
         print("lorian")
         
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
@@ -1395,8 +1392,11 @@ def survey_statistics(request, surveyID):
         data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
             'description':survey.Description,'questionList':questionList}
         return JsonResponse(data)
+    
+    
+    '''
         ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
-        RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all()                              
+        RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())                              
         # 将迭代器转换为列表  
         questions = list(all_questionList_iterator)
         questions.sort(key=lambda x: x['QuestionNumber']) 
@@ -1476,4 +1476,4 @@ def survey_statistics(request, surveyID):
         return JsonResponse(stats)
     print("lorian end")
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
+    '''

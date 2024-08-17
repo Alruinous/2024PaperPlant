@@ -121,6 +121,8 @@ const goToQuestionnaireFill = (questionnaireId, flag) => {
   });
 }
 const goToQuestionnaireData = (questionnaireId) => {
+    console.log("goToQuestionnaireData")
+    console.log(questionnaireId)
   r.push({
     path: '/dataPre',
     query: {
