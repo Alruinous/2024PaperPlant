@@ -1377,7 +1377,7 @@ def survey_statistics(request, surveyID):
 
                 text_counts = BlankAnswer.objects.filter(Question=question['QuestionID']).values('Content').annotate(count=Count('Content'))
                 for item in text_counts:
-                    answerText.append(item['Text'])
+                    answerText.append(item['Content'])
                     answerCount.append(item['count'])
 
                 questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category']})
@@ -1390,7 +1390,7 @@ def survey_statistics(request, surveyID):
 
                 rate_counts=RatingAnswer.objects.filter(Question=question['QuestionID']).values('Rate').annotate(count=Count('Rate'))
                 for item in rate_counts:
-                    answerText.append(item['Text'])
+                    answerText.append(item['Rate'])
                     answerCount.append(item['count'])
 
                 questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category']})
