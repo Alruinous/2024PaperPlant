@@ -1308,19 +1308,7 @@ def survey_statistics(request, surveyID):
         survey = Survey.objects.filter(SurveyID=surveyID).first()
         print("lorian")
         print(survey)
-        survey_stat = SurveyStatistic.objects.filter(Survey=survey).first()
-        print("lorian")
-        print(survey_stat)
-        #问卷基础信息
-        stats = {
-            'title': survey.Title,
-            'description': survey.Description,
-            'category': survey.Category,
-            'total_submissions': survey_stat.TotalResponses,
-            # 'max_participants': survey.QuotaLimit if survey.QuotaLimit else None,
-            'average_score': survey_stat.AverageScore,
-            'questionList': []
-        }
+
         print("lorian")
         
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
@@ -1381,6 +1369,7 @@ def survey_statistics(request, surveyID):
         data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
             'description':survey.Description,'questionList':questionList}
         return JsonResponse(data)
+    '''
                                                     ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
                                                     RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())                              
         # 将迭代器转换为列表  
@@ -1462,4 +1451,4 @@ def survey_statistics(request, surveyID):
         return JsonResponse(stats)
     print("lorian end")
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
+    '''
