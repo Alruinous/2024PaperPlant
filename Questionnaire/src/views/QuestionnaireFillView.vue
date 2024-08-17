@@ -196,6 +196,7 @@
           }
 
           if(status == 0){
+            ElMessage.success("暂存成功");
             promise = PostFill(this.questionnaireId,'Unsubmitted', this.question,this.duration,this.submissionId,this.username, 0);
             this.$router.push("/userManage");
           }
@@ -258,7 +259,7 @@
             
           }
           else if(status == 1 && this.type == 1){
-            this.success("投票成功");
+            ElMessage.success("投票成功");
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0,this.submissionId,this.username, 0);
             this.$router.push({path:'/dataPre',query:{questionnaireID:this.questionnaireId,flag:true}});
           }
@@ -266,16 +267,24 @@
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0, this.submissionId,this.username, 0);
             promise.then((result) => {
               if(result.message){
-                this.success("报名成功");
+                ElMessage.success("报名成功");
                 this.$router.push("/userManage");
               }
               else{
-                ElMessageBox.alert("报名人数已满");
+                ElMessageBox.confirm(
+                  "报名人数已满",
+                  '',
+                  {
+                    confirmButtonText: '确认',
+                    type: 'warning',
+                  }
+                )
               }
             })
           }
           else {
             promise = PostFill(this.questionnaireId,'Submitted',this.question,0, this.submissionId,this.username, 0);
+            ElMessage.success("提交成功");
             promise.then((result)=>{
               this.submissionId = result.submissionId;      
               this.$router.push({path:'/normalAnswer',query:{questionnaireID:this.questionnaireId, submissionID:this.submissionId}}); 
@@ -288,12 +297,6 @@
           ElMessage({
             message:content,
             type:'warning',
-          });
-        },
-        success(content){
-          ElMessage({
-            message:content,
-            type:'succes',
           });
         },
         //检测是否能够提交，如果没有把必填的填写完，则不能提交
@@ -330,6 +333,7 @@
      components:{
       NavigationBar,
       ElMessage,
+      ElMessageBox,
      },
      mounted(){
 
@@ -405,6 +409,7 @@
      components:{
       NavigationBar,
       ElMessage,
+      ElMessageBox,
      },
    })
   </script>
