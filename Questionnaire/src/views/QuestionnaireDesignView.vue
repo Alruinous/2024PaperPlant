@@ -593,7 +593,6 @@ const router = useRouter();
         this.warning("不能保存空的问卷")
         return;
       }
-      console.log(this.questionList);
       var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,false);
       this.$router.push({path:'/userManage/filled'});
       this.success("保存成功");
@@ -601,15 +600,13 @@ const router = useRouter();
 
     //发布问卷
     releaseQuestionnaire(){
-      if(this.flag==1){
+      if(this.flag == 1){
         this.questionnaireId = -1;
       }
       if(this.questionList.length == 0){
         this.warning("不能发布空的问卷");
         return;
       }
-      console.log(this.questionList);
-      console.log(this.questionList[0].optionList[0].MaxSelectablePeople);
       var promise = PostQuestion(this.questionnaireId,this.title,this.type,!this.isDisorder,this.timeLimit,this.questionList,this.description ,this.username,true);
       this.$router.push({path:'/userManage/filled'});
       this.success("发布成功");
@@ -627,6 +624,12 @@ const router = useRouter();
     this.questionnaireId = parseInt(this.$route.query.questionnaireId);
     this.type = this.$route.query.questionnaireType;
     this.flag = this.$route.query.flag;
+
+    // 如果没有传 flag，则flag默认为0
+    if(this.flag === undefined){
+      this.flag = 0;
+    }
+
     if(this.questionnaireId != -1){
       this.isLoading = true;
       var promise=GetQuestionnaire(this.questionnaireId,"/quetionnaireDesign",true);

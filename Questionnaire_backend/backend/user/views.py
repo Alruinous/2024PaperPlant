@@ -1,3 +1,4 @@
+import random
 from django.shortcuts import render
 from django.http import JsonResponse
 
@@ -344,6 +345,10 @@ class GetStoreFillView(APIView):
                 for option in options_query:
                     optionList.append({'content':option.Text,'optionNumber':option.OptionNumber,'isCorrect':option.IsCorrect,
                                        'optionId':option.OptionID,'MaxSelectablePeople':option.MaxSelectablePeople})
+                
+                if survey.Category == 3 and survey.IsOrder == False: #选项乱序展示
+                    random.shuffle(optionList)
+                
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'optionCnt':question["OptionCnt"],
                                      'optionList':optionList,'Answer':answer,'max':question['MaxSelectable']})
@@ -373,11 +378,15 @@ class GetStoreFillView(APIView):
 
                 questionList.append({'type':question["Category"],'question':question["Text"],'questionID':question["QuestionID"],
                                      'isNecessary':question["IsRequired"],'score':question["Score"],'Answer':answer})
-
+        
+        #题干乱序展示
+        if survey.Category == 3 and survey.IsOrder == False:
+            random.shuffle(questionList)
 
         #传回题干和填写记录
         data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
             'description':survey.Description,'questionList':questionList,'duration':submission.Interval, 'submissionID':submissionID}
+        
         return JsonResponse(data)
         
 
