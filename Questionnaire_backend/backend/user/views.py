@@ -1303,7 +1303,7 @@ def download_submissions(request, surveyID):
 
             #找出该问卷的所有已提交/已打分的填写记录，按提交时间从前向后排序
             submission_list=list(Submission.objects.filter(Survey=survey, Status__in=['Submitted', 'Graded']).values(
-                'SubmissionID','SubmissionTime','Respondent'
+                'SubmissionID','SubmissionTime','Respondent','Survey'
             ))
             if len(submission_list)==0:
                 return HttpResponse(content='No submission records available.',status=404)
@@ -1315,12 +1315,9 @@ def download_submissions(request, surveyID):
             for submission in submission_list:
                 sub_index+=1
                 user=User.objects.get(UserID=submission['Respondent'])
-                print(user)
-                print('444')
                 ws.cell(sub_index,1).value=user.username
-                print('333')
-                #Respondent.username
-                ws.cell(sub_index,2).value=submission.SubmissionTime
+
+                ws.cell(sub_index,2).value=submissionTime=submission['SubmissionTime'].strftime('%Y-%m-%d %H:%M:%S')
             
                 if survey.Category==3:  #考试问卷：所用时间为Duration；其他问卷：'--'
                     ws.cell(sub_index,3).value=submission.Interval
@@ -1329,24 +1326,29 @@ def download_submissions(request, surveyID):
             
                 ques_index=3
                 for question in all_questions_list:
-                    ques+=1
-                    if question.Category==1 or question.Category==2:
-                        #该题的所有选项
-                        all_options_answer_query=ChoiceAnswer.objects.filter(Question=question['QuestionID'],Submission=submission['SubmissionID'])
+                    ques_index+=1
 
-                        if not all_options_answer_query.exists():   #没有选择选项
+                    print(question['Category'])
+                    if question['Category']==1 or question['Category']==2:
+                        #该题的所有选项
+                        all_options_answer_list=list(ChoiceAnswer.objects.filter(Question=question['QuestionID'],Submission=submission['SubmissionID'])
+                                                      .values('ChoiceOptions'))
+
+                        if len(all_options_answer_list)==0:   #没有选择选项
                             ws.cell(sub_index,ques_index).value=' '
 
                         else: 
                             optionNumberList=[]
-                            for answer in all_options_answer_query:
-                                option=answer['ChoiceOptions']
-                                optionNumberList.append(option['OptionNumber'])
+                            for answer in all_options_answer_list:
+                                print('***')
+                                option=ChoiceOption.objects.filter(OptionID=answer['ChoiceOptions']).first()
+                                optionNumberList.append(str(option.OptionNumber))
                             optionNumberList.sort()     #选项顺序升序排列
-                            
+                            print(optionNumberList)
+
                             ws.cell(sub_index,ques_index).value=','.join(optionNumberList)
                     
-                    elif question.Category==3:      #填空题
+                    elif question['Category']==3:      #填空题
                         answer=BlankAnswer.objects.get(Question=question['QuestionID'],Submission=submission['SubmissionID'])
                         if answer is None:   
                             ws.cell(sub_index,ques_index).value=' '
@@ -1354,32 +1356,32 @@ def download_submissions(request, surveyID):
                             ws.cell(sub_index,ques_index).value=answer.Content
 
                     else:           #评分题
-                        rate=RatingAnswer.objects.get(Question=question['QuestionID'],Submission=submission['SubmissionID'])
+                        answer=RatingAnswer.objects.get(Question=question['QuestionID'],Submission=submission['SubmissionID'])
                         if answer is None:   
-                            ws.write(sub_index,ques_index,' ')
+                            ws.cell(sub_index,ques_index).value=' '
                         else: 
                             ws.cell(sub_index,ques_index).value=answer.Rate
 
                 if survey.Category==3:      #考试问卷：增加该填写记录的总得分
                     ws.cell(sub_index,ques_index).value=submission.Score
 
-
+            print('finished')
             # 准备写入到IO中
             output = BytesIO()
-            ws.save()
+            #ws.save()
             wb.save(output)     #Excel文件内容保存到IO中
 
             output.seek(0)	 # 重新定位到开始
 
             # 设置HttpResponse的类型
             response = HttpResponse(output.getvalue(), content_type='application/vnd.ms-excel')
-            ctime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            file_name = '-'.join([survey.Title,'填写记录统计']) 
-            file_name+='%s.xlsx'%ctime	# 给文件名中添加日期时间
-            file_name = urlquote(file_name)	 # 使用urlquote()方法解决中文无法使用的问题
-            response['Content-Disposition'] = 'attachment; filename=%s' % file_name
-            # response.write(output.getvalue())	 # 在设置HttpResponse的类型时，如果给了值，可以不写这句
+            formatted_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            file_name = '-'.join([survey.Title, '填写记录统计']) + '_' + formatted_now + '.xlsx' 
+            print(file_name)
 
+            file_name = quote(file_name)	 # 使用urlquote()方法解决中文无法使用的问题
+            response['Content-Disposition'] = 'attachment; filename=%s' % file_name
+            print(response)
             return response
 
         except Exception as e:
