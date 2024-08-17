@@ -41,7 +41,15 @@
     }
 
     const gotoUserManage = () => {
+        if(props.message)
+            return;
         router.push('/userManage');
+    }
+
+    const gotoAboutUs = () =>{
+        if(props.message)
+            return;
+        router.push('/aboutUs');
     }
 
     const goBack = () => {
@@ -94,10 +102,7 @@
 
 <template>
     <el-header class = "navigationBar">
-        <div @mouseover="logoIn('logo')" @mouseout="logoOut('logo')"  v-if="props.message">
-            <img id="logo" src="../assets/logo.png" alt="Element logo"/>
-        </div>
-        <div @mouseover="logoIn('logo')" @mouseout="logoOut('logo')" @click="gotoUserManage" v-else>
+        <div @mouseover="logoIn('logo')" @mouseout="logoOut('logo')" @click="gotoUserManage">
             <img id="logo" src="../assets/logo.png" alt="Element logo"/>
         </div>
 
@@ -120,6 +125,7 @@
             <template #dropdown>
             <el-dropdown-menu class="dropdown_menu">
                 <el-dropdown-item @click="gotoPersonal">个人中心</el-dropdown-item>
+                <el-dropdown-item @click="gotoAboutUs">关于我们</el-dropdown-item>
                 <el-dropdown-item @click="gotoHome">退出登录</el-dropdown-item>
             </el-dropdown-menu>
             </template>
