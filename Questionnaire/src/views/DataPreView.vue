@@ -117,7 +117,7 @@
                     <div class="row"></div>
                     <div>
                       <el-select v-model="cross1" placeholder="添加自变量" size="large" style="width: 240px; margin-left: 2%; margin-right: 2%;">
-                        <el-option v-for="item in cross" :key="item.value" :label="item.label" :value="item.value"/>
+                        <el-option v-for="item in cross" :key="item.value" :label="item.label" :value="item.value" :model="cross1"/>
                       </el-select>
                     </div>
                     <br/>
@@ -126,7 +126,7 @@
                     <div class="row"></div>
                     <div>
                       <el-select v-model="cross2" placeholder="添加因变量" size="large" style="width: 240px; margin-left: 2%; margin-right: 2%;">
-                        <el-option v-for="item in cross" :key="item.value" :label="item.label" :value="item.value"/>
+                        <el-option v-for="item in cross" :key="item.value" :label="item.label" :value="item.value" :model="cross1"/>
                       </el-select>
                     </div>
 
@@ -204,8 +204,8 @@ export default {
       cross1:undefined, //自变量的问题ID
       cross2:undefined, //因变量的问题ID
       crossHasChart:false,
-      crossContent:["11-5","22-3","11-5","44-8"],
-      crossCnt:[1,2,1,1],
+      crossContent:[],
+      crossCnt:[],
       //print
       printObj: {
         id: 'dataAnalysis', // 这里是要打印元素的ID
@@ -234,8 +234,18 @@ export default {
           return;
         }
         this.crossHasChart = true;
-        this.$nextTick(() => {
-          this.createCharts(index,this.crossContent,this.crossCnt,kind);
+
+        console.log(this.cross1);
+        console.log(this.cross2);
+        var promise = GetCrossData(this.cross1,this.cross2);
+        promise
+        .then((result) => {
+          
+        })
+        .finally(() => {
+          this.$nextTick(() => {
+            this.createCharts(index,this.crossContent,this.crossCnt,kind);
+          })
         })
       }
     },

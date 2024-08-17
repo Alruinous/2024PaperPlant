@@ -1205,24 +1205,26 @@ def cross_analysis(request, QuestionID1, QuestionID2):
         if QuestionID1 is None or QuestionID2 is None:
             return JsonResponse({'error': 'Missing QuestionID(s)'}, status=404)
         
-        if question1.Survey is not question2.Survey:
+        if question1.Survey.SurveyID != question2.Survey.SurveyID:
             return JsonResponse({'error': 'Two questions are not from the same questionnaire.'}, status=404)
         
         if question1.Category!=1 and question1.Category!=2:
+            print("3")
             return JsonResponse({'error':'Question1 is not a choice question.'},status=404)
         
         if question2.Category!=1 and question2.Category!=2:
+            print("4")
             return JsonResponse({'error':'Question2 is not a choice question.'},status=404)
         
 
         #问题1的所有选项
-        all_options_iterator_1=itertools.chain(ChoiceOption.objects.filter(Question=question1).values('OptionNumber','Text').all())
+        all_options_iterator_1=itertools.chain(ChoiceOption.objects.filter(Question=question1).values('OptionID','OptionNumber','Text').all())
                                   
         all_options_list_1 = list(all_options_iterator_1)
         all_options_list_1.sort(key=lambda x: x['OptionNumber']) 
 
         #问题2的所有选项
-        all_options_iterator_2=itertools.chain(ChoiceOption.objects.filter(Question=question2).values('OptionNumber','Text').all())
+        all_options_iterator_2=itertools.chain(ChoiceOption.objects.filter(Question=question2).values('OptionID','OptionNumber','Text').all())
                                   
         all_options_list_2 = list(all_options_iterator_2)
         all_options_list_2.sort(key=lambda x: x['OptionNumber']) 
@@ -1233,9 +1235,11 @@ def cross_analysis(request, QuestionID1, QuestionID2):
         for option1 in all_options_list_1:
             for option2 in all_options_list_2:
                 crossText.append('-'.join([option1['Text'],option2['Text']]))
-                crossCount.append('-'.join([str(ChoiceAnswer.objects.filter(Question=question1,ChoiceOptions=option1).count()),
-                                            ChoiceAnswer.objects.filter(Question=question2,ChoiceOptions=option2).count()]))
-
+                print("莫问题")
+                crossCount.append('-'.join([str(ChoiceAnswer.objects.filter(Question=question1,ChoiceOptions=option1['OptionID']).count()),
+                                            str(ChoiceAnswer.objects.filter(Question=question2,ChoiceOptions=option2['OptionID']).count())]))
+        print(crossCount)
+        print(crossText)
         data={'crossCount':crossCount,'crossText':crossText}
         
         return JsonResponse(data)
