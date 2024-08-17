@@ -9,7 +9,7 @@
     <div class="back">
       <el-container>
         <el-header>
-          <navigation-bar style="position: fixed;"/>
+          <navigation-bar v-if="username != null" style="position: fixed;"/>
         </el-header>
         <el-main class="main_container">
           <div class="right">
@@ -111,7 +111,7 @@
                   </div>
                   </div>
                 </n-tab-pane>
-                <n-tab-pane name="crossData" tab="交叉分析">
+                <n-tab-pane v-if="!flag" name="crossData" tab="交叉分析">
                   <div id="crossData">
                     <div style=" margin-left: 2%; margin-right: 2%;">自变量X</div>
                     <div class="row"></div>
@@ -151,15 +151,15 @@
             <el-tooltip content="下载数据" placement="right">
               <el-button size="large" @click="dialog=true" text circle><el-icon color="#337ecc" :size="30"><Download /></el-icon></el-button>
             </el-tooltip>
-            <div class="row"></div>
-            <div class="row"></div>
-            <el-tooltip content="分享" placement="right">
+            <div v-if="!isShare" class="row"></div>
+            <div v-if="!isShare" class="row"></div>
+            <el-tooltip v-if="!isShare" content="分享" placement="right">
               <n-popover trigger="click" placement="bottom">
                 <template #trigger>
                   <el-button size="large" text circle><el-icon color="#337ecc" :size="30" ><Share /></el-icon></el-button>
                 </template>
                 <!-- TieZhu：分享链接弹出框 -->
-                <span><n-qr-code value="http://localhost:8080/dataPre?questionnaireId=4" error-correction-level="H"/></span>
+                <span><n-qr-code :value="url+'&isShare=true'" error-correction-level="H"/></span>
               </n-popover>
             </el-tooltip>
           </div>
@@ -180,7 +180,7 @@ import NavigationBar from "@/components/NavigationBarInQuestionnaire.vue"
 import { NCard, dialogDark } from 'naive-ui';
 import { NTabs } from 'naive-ui';
 import { NTabPane } from 'naive-ui';
-import { ref } from 'vue';
+import { getCurrentInstance, ref } from 'vue';
 import { NCollapseTransition } from 'naive-ui';
 import { NSpace } from 'naive-ui';
 import { NPopover } from 'naive-ui';
@@ -192,6 +192,7 @@ import { ElMessage } from 'element-plus'
 export default {
   data() {
     return {
+      username:undefined,
       dialog:false,
       input:'',
       questionnaireId:2,
@@ -217,6 +218,7 @@ export default {
       },
       url:'',
       flag:false,//是否是为了展示投票结果而存在的页面
+      isShare:false,//是否为别人分享的数据（此时不应该允许此人继续分享）
     };
   },
   
@@ -404,7 +406,11 @@ export default {
   mounted(){
 
     this.questionnaireId = parseInt(this.$route.query.questionnaireId);
+    const internalInstance = getCurrentInstance()
+    const internalData = internalInstance.appContext.config.globalProperties
+    this.username = internalData.$cookies.get('username');
     this.flag = this.$route.query.flag;
+    this.isShare = this.$route.query.isShare;
 
     var promise = GetOtherData(this.questionnaireId);
     promise.then((result) => {
@@ -427,7 +433,6 @@ export default {
         }
       }
       console.log(this.questionList);
-
       this.url = window.location.href;
     })
   },
