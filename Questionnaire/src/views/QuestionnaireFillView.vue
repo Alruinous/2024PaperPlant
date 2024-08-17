@@ -204,8 +204,9 @@
           else if((status == 1 && this.type == 3) || status == 3){
             
             let sum = 0,i = 0;
+            
             for(i=0;i<this.questionList.length;i++){
-              if(this.questionList[i].type == 3 && this.questionList[i].fill == this.questionList[i].correctAnswer){
+              if(this.questionList[i].type == 3 && this.questionList[i].Answer === this.questionList[i].correctAnswer){
                 sum += this.questionList[i].score;
               }
               // else if(this.questionList[i].type == 1 && this.questionList[i].optionList[this.questionList[i].Answer].isCorrect){

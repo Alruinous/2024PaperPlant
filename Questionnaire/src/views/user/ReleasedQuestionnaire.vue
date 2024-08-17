@@ -157,14 +157,6 @@ const initCreated = (username) =>{
     questionnaires.value = [];
     var promise = GetReleasedQs(username);
     promise.then((result)=>{
-        // var categoryName = "";
-        // if(categoryId.value != ""){
-        //     categorys.value.forEach(category => {
-        //         if (category.id === categoryId) {
-        //             categoryName = category.categoryName;
-        //         }
-        //     });
-        // }
         var count = 0;
         var i = 1;
         result.data.forEach(element => {
@@ -305,7 +297,9 @@ const reviseQuestionnaire = (id, type) => {
     })
 }
 
-
+const formatDate = (date) => {
+    return date.split('T')[0]; // 提取日期部分
+}
 
 
 
@@ -344,7 +338,7 @@ const reviseQuestionnaire = (id, type) => {
                         <!-- 上部分 -->
                         <div class="card-header">
                             <span class="textbutton">{{ questionnaire.Title }}</span>
-                            <span style="float: right" class="right">发布日期: {{ questionnaire.PublishDate }}</span>
+                            <span style="float: right" class="right">发布日期: {{ formatDate(questionnaire.PublishDate) }}</span>
                             <span style="float: right" class="right" v-if="questionnaire.IsOpening">已发布</span>
                             <span style="float: right" class="right" v-else>已关闭</span>
                             <span style="float: right" class="right">回收量 {{questionnaire.FilledPeople}}</span>

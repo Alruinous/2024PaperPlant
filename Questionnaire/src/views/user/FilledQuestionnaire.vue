@@ -266,6 +266,13 @@ const handleCreate = () => {
   createDialogVisible.value = false;
 };
 
+const formatDate = (date) => {
+    return date.split('T')[0]; // 提取日期部分
+}
+
+
+
+
 </script>
 
 <template>
@@ -306,7 +313,7 @@ const handleCreate = () => {
                         <!-- 上部分 -->
                         <div class="card-header">
                             <span class="textbutton">{{ questionnaire.Title }}</span>
-                            <span style="float: right" class="right">填写日期: {{ questionnaire.PublishDate }}</span>
+                            <span style="float: right" class="right">填写日期: {{ formatDate(questionnaire.PublishDate) }}</span>
                             <span style="float: right" class="right">{{ questionnaire.Status }}</span>
                             <span style="float: right" class="right">ID: {{questionnaire.SurveyID}}</span>
                         </div>
