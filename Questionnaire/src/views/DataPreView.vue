@@ -230,7 +230,7 @@ export default {
       }
       else{
         if(this.cross1 == this.cross2){
-          this.warning("自变量和因变量不能一样");
+          this.warning("题目不能重复");
           return;
         }
         this.crossHasChart = true;
@@ -351,6 +351,16 @@ export default {
       }
       else{
         this.printObj.id = 'dataAnalysis';
+        // 在每次进入数据分析标签页时，默认展示柱状图
+        let i = 0;
+        for(i = 0;i < this.questionList.length;i++){
+          if(this.questionList[i].type != 3){
+            this.toggleChart(i,'bar');
+          }
+          else{
+            this.toggleChart(i,'wordcloud');
+          }
+        }
       }
     },
     //下载excel表格
@@ -382,16 +392,6 @@ export default {
     ElMessage,
   },
   mounted(){
-    // this.addSingle();
-    // this.addMultiple();
-    // this.addFill();
-    // this.addScore();
-    // let i = 0;
-    // for(i=0;i<this.questionList.length;i++){
-    //   if(this.questionList[i].type != 3){
-    //     this.cross.push({"type":this.questionList[i].type,"value":i,"label":this.questionList[i].question});
-    //   }
-    // }
 
     this.questionnaireId = parseInt(this.$route.query.questionnaireId);
     this.flag = this.$route.query.flag;
@@ -406,6 +406,15 @@ export default {
         this.questionList[i].question = this.questionList[i].Content;
         this.questionList[i].optionContent = this.questionList[i].Text;
         this.questionList[i].optionCnt = this.questionList[i].Count;
+        if(this.questionList[i].type <= 2){
+          this.cross.push({"label":String(i + 1) + "." + this.questionList[i].Content,"value":this.questionList[i].questionId})
+        }
+        if(this.questionList[i].type == 3){
+          this.toggleChart(i,'wordcloud');
+        }
+        else{
+          this.toggleChart(i,'bar');
+        }
       }
       console.log(this.questionList);
 

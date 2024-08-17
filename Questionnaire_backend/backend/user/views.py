@@ -1203,23 +1203,42 @@ def cross_analysis(request, QuestionID1, QuestionID2):
         question2 = ChoiceQuestion.objects.get(QuestionID=QuestionID2)
 
         if QuestionID1 is None or QuestionID2 is None:
-            return JsonResponse({'error': 'Missing QuestionID(s)'}, status=400)
-        survey = question1.Survey
+            return JsonResponse({'error': 'Missing QuestionID(s)'}, status=404)
         
-        results = {'list': []}
-        for options1 in question1.choice_options.all():
-            for options2 in question2.choice_options.all():
-                cnt = 0
-                for submission in Submission.objects.filter(Survey=survey):
-                    if ChoiceAnswer.objects.filter(Submission=submission, ChoiceOptions=options1).exists() and ChoiceAnswer.objects.filter(Submission=submission, ChoiceOptions=options2).exists():
-                        cnt += 1
-                results['list'].append({
-                    'content': f"{options1.Text}-{options2.Text}",
-                    'cnt': cnt
-                })
-                
+        if question1.Survey is not question2.Survey:
+            return JsonResponse({'error': 'Two questions are not from the same questionnaire.'}, status=404)
         
-        return JsonResponse(results)
+        if question1.Category!=1 and question1.Category!=2:
+            return JsonResponse({'error':'Question1 is not a choice question.'},status=404)
+        
+        if question2.Category!=1 and question2.Category!=2:
+            return JsonResponse({'error':'Question2 is not a choice question.'},status=404)
+        
+
+        #问题1的所有选项
+        all_options_iterator_1=itertools.chain(ChoiceOption.objects.filter(Question=question1).values('OptionNumber','Text').all())
+                                  
+        all_options_list_1 = list(all_options_iterator_1)
+        all_options_list_1.sort(key=lambda x: x['OptionNumber']) 
+
+        #问题2的所有选项
+        all_options_iterator_2=itertools.chain(ChoiceOption.objects.filter(Question=question2).values('OptionNumber','Text').all())
+                                  
+        all_options_list_2 = list(all_options_iterator_2)
+        all_options_list_2.sort(key=lambda x: x['OptionNumber']) 
+
+
+        crossCount=[]      #数组：选每个交叉选项的人数
+        crossText=[]       #数组：每个交叉选项的内容
+        for option1 in all_options_list_1:
+            for option2 in all_options_list_2:
+                crossText.append('-'.join([option1['Text'],option2['Text']]))
+                crossCount.append('-'.join([str(ChoiceAnswer.objects.filter(Question=question1,ChoiceOptions=option1).count()),
+                                            ChoiceAnswer.objects.filter(Question=question2,ChoiceOptions=option2).count()]))
+
+        data={'crossCount':crossCount,'crossText':crossText}
+        
+        return JsonResponse(data)
 
 #下载表格
 def download_submissions(request, surveyID):
@@ -1362,7 +1381,7 @@ def survey_statistics(request, surveyID):
                     optionText.append(option['Text'])
                     optionCount.append(ChoiceAnswer.objects.filter(Question=question['QuestionID'],ChoiceOptions=option['OptionID']).count())
 
-                questionList.append({'Content':question["Text"],'Text':optionText,'Count':optionCount,'type':question['Category']})
+                questionList.append({'Content':question["Text"],'Text':optionText,'Count':optionCount,'type':question['Category'],"questionId":question['QuestionID']})
 
                 print("lorian2")
                 
@@ -1377,10 +1396,10 @@ def survey_statistics(request, surveyID):
 
                 text_counts = BlankAnswer.objects.filter(Question=question['QuestionID']).values('Content').annotate(count=Count('Content'))
                 for item in text_counts:
-                    answerText.append(item['Text'])
+                    answerText.append(item['Content'])
                     answerCount.append(item['count'])
 
-                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category']})
+                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category'],"questionId":question['QuestionID']})
 
                 print("lorian3")
             
@@ -1390,10 +1409,10 @@ def survey_statistics(request, surveyID):
 
                 rate_counts=RatingAnswer.objects.filter(Question=question['QuestionID']).values('Rate').annotate(count=Count('Rate'))
                 for item in rate_counts:
-                    answerText.append(item['Text'])
+                    answerText.append(item['Rate'])
                     answerCount.append(item['count'])
 
-                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category']})
+                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount,'type':question['Category'],"questionId":question['QuestionID']})
 
                 print("lorian4")
                 
