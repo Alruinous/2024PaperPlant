@@ -270,7 +270,23 @@ const formatDate = (date) => {
     return date.split('T')[0]; // 提取日期部分
 }
 
+const goToQuestionnaireDesignCopy = (questionnaireId, questionnaireType, flag) => {
+  r.push({
+    path: '/questionnaireDesign',
+    query: {
+      questionnaireId: questionnaireId,
+      questionnaireType: questionnaireType,
+      flag: flag,
+    }
+  });
+}
 
+// 使用 ref 创建响应式数据
+const modeDialogVisible = ref(false); // 控制创建问卷弹窗的显示
+// 点击创建问卷按钮时显示弹窗
+const showModeDialog = () => {
+    modeDialogVisible.value = true;
+};
 
 
 </script>
@@ -280,6 +296,7 @@ const formatDate = (date) => {
             <div class="header">
                 <span style="font-size: 30px;">已填写问卷</span>
                 <div class="extra">
+                    <button class="nbbutton" @click="showModeDialog" style="margin-right: 30px;">问卷模板</button>
                     <button class="nbbutton" @click="showCreateDialog" style="margin-right: 30px;">创建问卷</button>
                 </div>
             </div>
@@ -333,27 +350,70 @@ const formatDate = (date) => {
                     <div class="dialogfont">请选择问卷类型</div>
                     <div class="dialog">
                         <div class="book" @click="goToQuestionnaireDesign(-1, 0)">
-                            <p>普通问卷</p>
+                            <img src="../../assets/0.png">
                             <div class="cover">
-                                <img src="../../assets/0.png">
+                                <p>普通问卷</p>
                             </div>
                         </div>
                         <div class="book" @click="goToQuestionnaireDesign(-1, 1)">
-                            <p>投票问卷</p>
+                            <img src="../../assets/1.png">
                             <div class="cover">
-                                <img src="../../assets/1.png">
+                                <p>投票问卷</p>
                             </div>
                         </div>
                         <div class="book" @click="goToQuestionnaireDesign(-1, 2)">
-                            <p>报名问卷</p>
+                            <img src="../../assets/2.png">
                             <div class="cover">
-                                <img src="../../assets/2.png">
+                                <p>报名问卷</p>
                             </div>
                         </div>
                         <div class="book" @click="goToQuestionnaireDesign(-1, 3)">
-                            <p>考试问卷</p>
+                            <img src="../../assets/3.png">
                             <div class="cover">
-                                <img src="../../assets/3.png">
+                                <p>考试问卷</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </el-dialog>
+            <el-dialog width="1050px" height="300px" center v-model="modeDialogVisible" @update:visible="val => modeDialogVisible = val" >
+                <div class="dialogfather">
+                    <div class="dialogfont">请选择模板</div>
+                    <div class="dialog">
+                        <div class="book1" @click="goToQuestionnaireDesignCopy(291, 0, 1)">
+                            <img src="../../assets/mod/0.png">
+                            <div class="cover1">
+                                <span>客户满意度调查问卷</span>
+                            </div>
+                        </div>
+                        <div class="book1" @click="goToQuestionnaireDesignCopy(292, 0, 1)">
+                            <img src="../../assets/mod/1.png">
+                            <div class="cover1">
+                                <span>动物领养调查问卷</span>
+                            </div>
+                        </div>
+                        <div class="book1" @click="goToQuestionnaireDesignCopy(294, 0, 1)">
+                            <img src="../../assets/mod/2.png">
+                            <div class="cover1">
+                                <span>市场情况调研问卷</span>
+                            </div>
+                        </div>
+                        <div class="book1" @click="goToQuestionnaireDesignCopy(295, 2, 1)">
+                            <img src="../../assets/mod/3.png">
+                            <div class="cover1">
+                                <span>暑期课程学生报名表</span>
+                            </div>
+                        </div>
+                        <div class="book1" @click="goToQuestionnaireDesignCopy(296, 1, 1)">
+                            <img src="../../assets/mod/4.png">
+                            <div class="cover1">
+                                <span>年度社区活动提案投票</span>
+                            </div>
+                        </div>
+                        <div class="book1" @click="goToQuestionnaireDesignCopy(297, 3, 1)">
+                            <img src="../../assets/mod/5.png">
+                            <div class="cover1">
+                                <span>2024年综合知识测试</span>
                             </div>
                         </div>
                     </div>
@@ -422,6 +482,76 @@ const formatDate = (date) => {
     font-weight: bold;
 }
 
+.dialog .book1 {
+  position: relative;
+  border-radius: 10px;
+  width: 130px;
+  height: 180px;
+  background-color: rgb(255, 255, 255);
+  /* -webkit-box-shadow: 1px 1px 12px #000; */
+  box-shadow: 1px 1px 3px #000;
+  -webkit-transform: preserve-3d;
+  -ms-transform: preserve-3d;
+  transform: preserve-3d;
+  -webkit-perspective: 2000px;
+  perspective: 2000px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  color: #000000;
+
+  margin: 40px 20px;
+  cursor: pointer;
+}
+
+.dialog .cover1 {
+  top: 0;
+  position: absolute;
+  background-color: rgb(255, 255, 255);
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-transition: all 0.5s;
+  transition: all 0.5s;
+  -webkit-transform-origin: 0;
+  -ms-transform-origin: 0;
+  transform-origin: 0;
+  /* -webkit-box-shadow: 1px 1px 12px #000; */
+  box-shadow: 1px 1px 3px #000;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+.dialog .book1:hover .cover1 {
+  -webkit-transition: all 0.5s;
+  transition: all 0.5s;
+  -webkit-transform: rotatey(-80deg);
+  -ms-transform: rotatey(-80deg);
+  transform: rotatey(-80deg);
+}
+
+.dialog span {
+  font-size: 20px;
+  font-weight: bolder;
+  margin-left: 15px;
+  margin-right: 10px;
+}
+
+
 .dialog .book {
   position: relative;
   border-radius: 10px;
@@ -487,7 +617,7 @@ const formatDate = (date) => {
 .dialog p {
   font-size: 40px;
   font-weight: bolder;
-  margin-left: 20px;
+  /* margin-left: 5px; */
 }
 
 .dialog{
