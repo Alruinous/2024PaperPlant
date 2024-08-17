@@ -189,6 +189,7 @@ import { NQrCode } from 'naive-ui';
 import Print from 'vue3-print-nb';
 import { GetCrossData, GetExcel, GetOtherData } from '@/api/question';
 import { ElMessage } from 'element-plus'
+import axios from 'axios';
 
 export default {
   data() {
@@ -383,10 +384,29 @@ export default {
     },
     //下载excel表格
     excel(){
-      var promise = GetExcel(this.questionnaireId);
-      promise.then((result) => {
-        console.log(promise);
+      const surveyID = this.questionnaireId;  // 请根据实际情况替换此值
+      
+      axios({
+        method: 'get',
+        url: `http://127.0.0.1:8000/dataPre/download/${surveyID}`,  // 确保URL正确指向你的后端方法
+        responseType: 'blob',  // 重要：设置响应类型为 blob，以便处理二进制文件
       })
+      .then(response => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+
+        let filename = this.title + "填写记录统计_" + (new Date().toLocaleString()) + ".xlsx";
+        link.setAttribute('download', filename); // 设置下载的文件名
+
+        document.body.appendChild(link);
+        link.click();  // 触发下载
+        document.body.removeChild(link); // 清理DOM
+        window.URL.revokeObjectURL(url);  // 释放URL对象
+      })
+      .catch(error => {
+        console.error('下载失败:', error);
+      });
     },
 
     warning(content){

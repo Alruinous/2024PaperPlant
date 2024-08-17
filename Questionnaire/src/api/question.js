@@ -79,10 +79,3 @@ export function PostQuestion(surveyID,title,category,isOrder,timeLimit,questionL
     data.date = formattedDate;
     return post('/questionnaireDesign',data);
 }
-//下载excel表格
-export function GetExcel(surveyID){
-    let data={};
-    data.surveyID = surveyID;
-    const url = `/dataPre/download/${surveyID}`;
-    return get(url);
-}

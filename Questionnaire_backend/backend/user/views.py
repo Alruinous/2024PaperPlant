@@ -1303,7 +1303,7 @@ def download_submissions(request, surveyID):
 
             #找出该问卷的所有已提交/已打分的填写记录，按提交时间从前向后排序
             submission_list=list(Submission.objects.filter(Survey=survey, Status__in=['Submitted', 'Graded']).values(
-                'SubmissionID','SubmissionTime','Respondent','Survey'
+                'SubmissionID','SubmissionTime','Respondent','Survey','Interval','Score'
             ))
             if len(submission_list)==0:
                 return HttpResponse(content='No submission records available.',status=404)
@@ -1320,7 +1320,7 @@ def download_submissions(request, surveyID):
                 ws.cell(sub_index,2).value=submissionTime=submission['SubmissionTime'].strftime('%Y-%m-%d %H:%M:%S')
             
                 if survey.Category==3:  #考试问卷：所用时间为Duration；其他问卷：'--'
-                    ws.cell(sub_index,3).value=submission.Interval
+                    ws.cell(sub_index,3).value=submission['Interval']
                 else:
                     ws.cell(sub_index,3).value='--'
             
@@ -1363,7 +1363,7 @@ def download_submissions(request, surveyID):
                             ws.cell(sub_index,ques_index).value=answer.Rate
 
                 if survey.Category==3:      #考试问卷：增加该填写记录的总得分
-                    ws.cell(sub_index,ques_index).value=submission.Score
+                    ws.cell(sub_index,ques_index).value=submission['Score']
 
             print('finished')
             # 准备写入到IO中
