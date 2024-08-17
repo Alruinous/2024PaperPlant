@@ -246,11 +246,12 @@
             promise = PostFill(this.questionnaireId,'Graded',this.question,this.duration,this.submissionId,this.username, this.score);
             promise.then((result)=>{
               this.submissionId = result.submissionId;
-              //计算zhibi
-              // if(result.message == "True") {
-              //   this.money += 50;
-              //   $cookies.set('money', this.money);
-              // }
+              // 计算zhibi
+              console.log("questionnaireFill: result.message" + result.message)
+              if(result.message == "True") {
+                this.money += 50;
+                $cookies.set('money', this.money);
+              }
 
               this.$router.push({path:'/testAnswer',query:{questionnaireId:this.questionnaireId,submissionId:this.submissionId,score:this.score}}); 
             })

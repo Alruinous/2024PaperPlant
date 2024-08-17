@@ -1368,6 +1368,8 @@ def survey_statistics(request, surveyID):
         data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
             'description':survey.Description,'questionList':questionList}
         return JsonResponse(data)
+    
+    
     '''
         ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
         RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())                              
