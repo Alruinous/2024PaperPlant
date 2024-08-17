@@ -1236,8 +1236,11 @@ def cross_analysis(request, QuestionID1, QuestionID2):
             for option2 in all_options_list_2:
                 crossText.append('-'.join([option1['Text'],option2['Text']]))
                 print("莫问题")
-                crossCount.append('-'.join([str(ChoiceAnswer.objects.filter(Question=question1,ChoiceOptions=option1['OptionID']).count()),
-                                            str(ChoiceAnswer.objects.filter(Question=question2,ChoiceOptions=option2['OptionID']).count())]))
+                # crossCount.append('-'.join([str(ChoiceAnswer.objects.filter(Question=question1,ChoiceOptions=option1['OptionID']).count()),
+                #                             str(ChoiceAnswer.objects.filter(Question=question2,ChoiceOptions=option2['OptionID']).count())]))
+                submission_option1 = ChoiceAnswer.objects.filter(Question=question1,ChoiceOptions=option1['OptionID']).values_list('Submission', flat=True).distinct()
+                cnt = ChoiceAnswer.objects.filter(Submission__in=submission_option1,Question=question2,ChoiceOptions=option2['OptionID']).count()
+                crossCount.append(cnt)
         print(crossCount)
         print(crossText)
         data={'crossCount':crossCount,'crossText':crossText}

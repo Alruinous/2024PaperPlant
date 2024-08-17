@@ -242,7 +242,8 @@ export default {
         var promise = GetCrossData(this.cross1,this.cross2);
         promise
         .then((result) => {
-          
+          this.crossContent = result.crossText;
+          this.crossCnt = result.crossCount;
         })
         .finally(() => {
           this.$nextTick(() => {
