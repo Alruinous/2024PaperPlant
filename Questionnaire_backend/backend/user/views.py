@@ -498,7 +498,7 @@ def get_submission(request):
                         print(option.MaxSelectablePeople)
 
                         if option.MaxSelectablePeople<=0:
-                            data={'message':'People exceeds'}
+                            data={'message':False,'content':'报名人数已满'}
                             return JsonResponse(data)
                         
                         else:
@@ -518,7 +518,7 @@ def get_submission(request):
                         #若已提交，报名问卷的必填选择题中，选择的对应选项人数-1
                         if status=='Submitted' and survey.Category==2 and question.IsRequired==True:
                             if option.MaxSelectablePeople<=0:
-                                data={'message':'People exceeds'}
+                                data={'message':False,'content':'报名人数已满'}
                                 return JsonResponse(data)
                             else:
                                 option.MaxSelectablePeople-=1
@@ -533,7 +533,8 @@ def get_submission(request):
                     ratingAnswer=RatingAnswer.objects.create(Question=question,Submission=submission,Rate=answer)
                     ratingAnswer.save()
 
-
+            user.zhibi+=50
+            user.save()
                 
         except json.JSONDecodeError:  
             return JsonResponse({'error': 'Invalid JSON body'}, status=400)
@@ -568,7 +569,7 @@ class GetQuestionnaireView(APIView):
         '''
 
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
-                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
+                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','MaxSelectable','QuestionID').all(),
                                                     RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())
                                                     
         # 将迭代器转换为列表  
@@ -622,12 +623,11 @@ def save_qs_design(request):
             Is_released=body['Is_released'] #保存/发布
 
             questionList=body['questionList']   #问卷题目列表
-            # print(questionList)
+            print(questionList)
             user=User.objects.get(username=username)
             if user is None:        
                 return HttpResponse(content='User not found', status=400) 
             
-
             #当前不存在该问卷，创建：
             if surveyID==-1:
                 survey=Survey.objects.create(Owner=user,Title=title,
@@ -635,6 +635,7 @@ def save_qs_design(request):
                                              Is_open=True,Is_deleted=False,Category=catecory,
                                              TotalScore=0,TimeLimit=timelimit,IsOrder=isOrder
                                             )
+                print("TieZhu")
                 #survey.QuotaLimit=people
             #已有该问卷的编辑记录
             else:
@@ -674,10 +675,8 @@ def save_qs_design(request):
             for question in questionList:
                 if question["type"]==1 or question["type"]==2:        #单选/多选
 
-                    print("---")
-                    print(question['max'])
                     optionList=question['optionList']
-
+                    
                     question=ChoiceQuestion.objects.create(Survey=survey,Text=question["question"],IsRequired=question["isNecessary"],
                                                                 QuestionNumber=index,Score=question["score"],Category=question["type"],
                                                                 OptionCnt=question["optionCnt"],MaxSelectable=question['max'])
@@ -687,7 +686,7 @@ def save_qs_design(request):
                     jdex=1
                     for option in optionList:
                         option=ChoiceOption.objects.create(Question=question,Text=option["content"],IsCorrect=option["isCorrect"],
-                                                           OptionNumber=jdex)
+                                                           OptionNumber=jdex,MaxSelectablePeople=option['MaxSelectablePeople'])
                         option.save()
                         jdex=jdex+1
 
@@ -907,6 +906,7 @@ def check_qs(request,username,questionnaireId,type):
     
     #报名问卷：超过人数，不可以再报名
     elif qs.Category==2:
+        print("TieZhu")
         #检查是否超人数(检查每个必填选择题的所有选项，是否都超人数)
         submission_query=Submission.objects.filter(Respondent=user,Survey=qs)
 
@@ -1292,8 +1292,14 @@ def download_submissions(request, surveyID):
 
 from django.db.models import Count, Sum, Q
 
+#数据分析：向前端传输该问卷的所有题目及填写内容的统计数据
 def survey_statistics(request, surveyID):
     if (request.method=='GET'):
+        #问卷
+        survey = Survey.objects.filter(SurveyID=surveyID)
+        if not survey.exists():
+            return JsonResponse({'error': 'Survey not found'}, status=404)
+
 
         print("start survey_statistics")
         print("lorian")
@@ -1317,8 +1323,65 @@ def survey_statistics(request, surveyID):
         print("lorian")
         
         all_questionList_iterator = itertools.chain(BlankQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','CorrectAnswer','QuestionNumber','QuestionID').all(),
-                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
-                                                    RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all())                              
+                                                    ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID','MaxSelectable').all(),
+                                                    RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionID','QuestionNumber').all())
+
+        # 将迭代器转换为列表 (按QuestionNumber递增排序)                                        
+        all_questions_list = list(all_questionList_iterator)
+        all_questions_list.sort(key=lambda x: x['QuestionNumber']) 
+
+        #print(all_questions_list.length())
+        questionList=[]
+        #print(all_questions)
+        
+        for question in all_questions_list:
+            if question["Category"]==1 or question["Category"]==2:    #选择题
+                print(question)
+                    
+                #该问题的所有选项
+                all_options_iterator=itertools.chain(ChoiceOption.objects.filter(Question=question).values('OptionNumber','Text').all())
+                                  
+                all_options_list = list(all_options_iterator)
+                all_options_list.sort(key=lambda x: x['OptionNumber']) 
+
+                optionCount=[]      #数组：选每个选项的人数
+                optionText=[]       #数组：每个选项的内容
+                for option in all_options_list:
+                    optionText.append(option['Text'])
+                    optionCount.append(ChoiceAnswer.objects.filter(Question=question,ChoiceOptions=option).count())
+
+                questionList.append({'Content':question["Text"],'Text':optionText,'Count':optionCount})
+                
+                    
+            elif question["Category"]==3:       #填空题
+                answerText=[]   #数组：填空的内容
+                answerCount=[]  #数组：填该内容的人数
+
+                text_counts = BlankAnswer.objects.filter(Question=question).values('Text').annotate(count=Count('Text'))
+                for item in text_counts:
+                    answerText.append(item['Text'])
+                    answerCount.append(item['count'])
+
+                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount})
+            
+            else:       #评分题
+                answerText=[]   #数组：评分的分数
+                answerCount=[]  #数组：该评分的人数
+
+                rate_counts=RatingAnswer.objects.filter(Question=question).values('Rate').annotate(count=Count('Rate'))
+                for item in rate_counts:
+                    answerText.append(item['Text'])
+                    answerCount.append(item['count'])
+
+                questionList.append({'Content':question["Text"],'Text':answerText,'Count':answerCount})
+                
+
+        #传回题干和填写记录的统计数据
+        data={'Title':survey.Title,'category':survey.Category,'TimeLimit':survey.TimeLimit,
+            'description':survey.Description,'questionList':questionList}
+        return JsonResponse(data)
+        ChoiceQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','OptionCnt','QuestionNumber','QuestionID').all(),
+        RatingQuestion.objects.filter(Survey=survey).values('Category', 'Text', 'QuestionID', 'IsRequired', 'Score','QuestionNumber','QuestionID').all()                              
         # 将迭代器转换为列表  
         questions = list(all_questionList_iterator)
         questions.sort(key=lambda x: x['QuestionNumber']) 
