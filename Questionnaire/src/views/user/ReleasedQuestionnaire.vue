@@ -135,7 +135,7 @@ const goToQuestionnaireData = (questionnaireId, FilledPeople) => {
     console.log("goToQuestionnaireData")
     console.log(questionnaireId)
     r.push({
-        name: 'dataPre',
+        name: 'dataPreFlag',
         params: {
             questionnaireId: questionnaireId
         }
