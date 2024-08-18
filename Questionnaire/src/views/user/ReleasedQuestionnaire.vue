@@ -341,7 +341,7 @@ const copyToClipboard = async () => {
 
 const shareQuestionnaire = (SurveyID) => {
     showShareDialog();
-    url.value = "http://localhost:8080/questionnaireFill?questionnaireId=" + SurveyID + "&submissionId=-1"
+    url.value = "http://8.140.247.134:8002/questionnaireFill?questionnaireId=" + SurveyID + "&submissionId=-1"
 }
 
 // 使用 ref 创建响应式数据
