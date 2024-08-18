@@ -152,15 +152,15 @@
             <el-tooltip content="下载数据" placement="right">
               <el-button size="large" @click="dialog=true" text circle><el-icon color="#337ecc" :size="30"><Download /></el-icon></el-button>
             </el-tooltip>
-            <div v-if="!isShare" class="row"></div>
-            <div v-if="!isShare" class="row"></div>
-            <el-tooltip v-if="!isShare" content="分享" placement="right">
+            <div v-if="isShare==0" class="row"></div>
+            <div v-if="isShare==0" class="row"></div>
+            <el-tooltip v-if="isShare==0" content="分享" placement="right">
               <n-popover trigger="click" placement="bottom">
                 <template #trigger>
                   <el-button size="large" text circle><el-icon color="#337ecc" :size="30" ><Share /></el-icon></el-button>
                 </template>
                 <!-- TieZhu：分享链接弹出框 -->
-                <span><n-qr-code :value="url+'&isShare=true'" error-correction-level="H"/></span>
+                <span><n-qr-code :value="url+'&isShare=1'" error-correction-level="H"/></span>
               </n-popover>
             </el-tooltip>
           </div>
@@ -220,7 +220,7 @@ export default {
       },
       url:'',
       flag:false,//是否是为了展示投票结果而存在的页面
-      isShare:false,//是否为别人分享的数据（此时不应该允许此人继续分享）
+      isShare:0,//是否为别人分享的数据（此时不应该允许此人继续分享）
     };
   },
   
@@ -437,6 +437,10 @@ export default {
     this.username = internalData.$cookies.get('username');
     this.flag = this.$route.query.flag;
     this.isShare = this.$route.query.isShare;
+
+    if(this.isShare === undefined){
+      this.isShare = 0;
+    }
 
     var promise = GetOtherData(this.questionnaireId);
     promise.then((result) => {
