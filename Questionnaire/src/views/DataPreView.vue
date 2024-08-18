@@ -160,7 +160,7 @@
                   <el-button size="large" text circle><el-icon color="#337ecc" :size="30" ><Share /></el-icon></el-button>
                 </template>
                 <!-- TieZhu：分享链接弹出框 -->
-                <span><n-qr-code :value="url+'&isShare=1'" error-correction-level="H"/></span>
+                <span><n-qr-code :value="url+'/1'" error-correction-level="H"/></span>
               </n-popover>
             </el-tooltip>
           </div>
@@ -431,15 +431,17 @@ export default {
   },
   mounted(){
 
-    this.questionnaireId = parseInt(this.$route.query.questionnaireId);
+    this.questionnaireId = parseInt(this.$route.params.questionnaireId);
     const internalInstance = getCurrentInstance()
     const internalData = internalInstance.appContext.config.globalProperties
     this.username = internalData.$cookies.get('username');
-    this.flag = this.$route.query.flag;
-    this.isShare = this.$route.query.isShare;
+    this.flag = this.$route.params.flag;
 
-    if(this.isShare === undefined){
+    if(this.$route.params.isShare === undefined){
       this.isShare = 0;
+    }
+    else{
+      this.isShare = parseInt(this.$route.params.isShare);
     }
 
     var promise = GetOtherData(this.questionnaireId);

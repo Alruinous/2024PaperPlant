@@ -127,7 +127,7 @@
 
                 //判断是否要跳转到questioinnareFill界面
                 if(receivedQuestionnaireId != -1){
-                    router.push({path:'/questionnaireFill', query:{questionnaireId: receivedQuestionnaireId, submissionId: -1}});
+                    router.push({name:'questionnaireFill', params:{questionnaireId: receivedQuestionnaireId, submissionId: -1}});
                     console.log("jump to questionnaireFill")
                     return;
                 }

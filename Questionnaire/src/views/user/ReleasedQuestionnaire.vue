@@ -116,9 +116,10 @@ const goToQuestionnaireDesignCopy = (questionnaireId, questionnaireType, flag) =
 }
 const goToQuestionnaireFill = (questionnaireId, flag) => {
   r.push({
-    path: '/questionnaireFill',
-    query: {
+    name: 'questionnaireFill',
+    params: {
       questionnaireId: questionnaireId,
+      submissionId:-2,
       flag: flag,
     }
   });
@@ -134,9 +135,9 @@ const goToQuestionnaireData = (questionnaireId, FilledPeople) => {
     console.log("goToQuestionnaireData")
     console.log(questionnaireId)
     r.push({
-        path: '/dataPre',
-        query: {
-        questionnaireId: questionnaireId
+        name: 'dataPre',
+        params: {
+            questionnaireId: questionnaireId
         }
     });
 }
@@ -341,7 +342,7 @@ const copyToClipboard = async () => {
 
 const shareQuestionnaire = (SurveyID) => {
     showShareDialog();
-    url.value = "http://8.140.247.134:8002/questionnaireFill?questionnaireId=" + SurveyID + "&submissionId=-1"
+    url.value = "http://8.140.247.134:8002/questionnaireFill/" + SurveyID + "/-1"
 }
 
 // 使用 ref 创建响应式数据

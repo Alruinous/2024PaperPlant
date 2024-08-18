@@ -8,8 +8,13 @@ const routes = [
     component: () => import('../views/HomeView.vue')
   },
   {
-    path: '/dataPre',
-    name: 'dataPre',
+    path: '/dataPre/:questionnaireId/:isShare?',
+    name: 'dataPreShare',
+    component: () => import('../views/DataPreView.vue')
+  },
+  {
+    path: '/dataPre/:questionnaireId/:flag?',
+    name: 'dataPreFlag',
     component: () => import('../views/DataPreView.vue')
   },
   {
@@ -18,7 +23,7 @@ const routes = [
     component: () => import('../views/QuestionnaireDesignView.vue')
   },
   {
-    path: '/questionnaireFill',
+    path: '/questionnaireFill/:questionnaireId/:submissionId/:flag?',
     name: 'questionnaireFill',
     component: () => import('../views/QuestionnaireFillView.vue')
   },

@@ -89,10 +89,9 @@ const goToQuestionnaireFill = (questionnaireId, submissionId, Status, type, scor
     // var promise = checkFilled(questionnaireId);
     // promise.then((result)=>{
     //     if(result.message === "True"){
-            url = '/questionnaireFill';
             r.push({
-                path: url,
-                query: {
+                name: 'questionnaireFill',
+                params: {
                     questionnaireId: questionnaireId,
                     submissionId: submissionId
                 }
@@ -119,10 +118,9 @@ const goToQuestionnaireFill = (questionnaireId, submissionId, Status, type, scor
     }
     else if(type == 1){
         r.push({
-            path: "/dataPre",
-            query: {
+            name: "dataPre",
+            params: {
                 questionnaireId: questionnaireId,
-                submissionId: submissionId,
                 flag: true
             }
         });
