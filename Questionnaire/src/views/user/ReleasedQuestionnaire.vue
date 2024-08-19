@@ -330,14 +330,44 @@ var url = ref('https://www.baidu.com');
 
 // 复制到剪贴板的函数
 const copyToClipboard = async () => {
-  try {
-    // 使用 Clipboard API 复制内容
-    await navigator.clipboard.writeText(url.value);
-    alert('网址已复制到剪贴板!');
-  } catch (err) {
-    console.error('复制失败:', err);
-    alert('复制失败，请手动复制网址。');
-  }
+//  try {
+//   // 使用 Clipboard API 复制内容
+//   await navigator.clipboard.writeText(url.value);
+//   alert('网址已复制到剪贴板!');
+//  } catch (err) {
+//   console.error('复制失败:', err);
+//   alert('复制失败，请手动复制网址。');
+//  }
+    // 获取要复制的内容
+    const textToCopy = url.value;
+    // 辅助函数：使用 document.execCommand 复制文本
+    const copyUsingExecCommand = () => {
+        const textArea = document.createElement('textarea');
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            alert('网址已复制到剪贴板!');
+        } catch (err) {
+            console.error('复制失败:', err);
+            alert('复制失败，请手动复制网址。');
+        }
+        document.body.removeChild(textArea);
+    };
+    // 尝试使用 Clipboard API 复制
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            alert('网址已复制到剪贴板!');
+        } catch (err) {
+            console.error('Clipboard API 复制失败:', err);
+            copyUsingExecCommand(); // 作为回退方案使用 execCommand
+        }
+    } else {
+    // 如果不支持 Clipboard API，则使用 execCommand
+        copyUsingExecCommand();
+    }
 };
 
 const shareQuestionnaire = (SurveyID) => {
