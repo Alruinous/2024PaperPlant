@@ -844,7 +844,7 @@ def get_released_qs(request,username):
 
         data_list=[]
         for survey in qs_query:
-            submissionCnt=Submission.objects.filter(Survey=survey).count()  #该问卷已提交的填写份数
+            submissionCnt=Submission.objects.filter(Survey=survey,Status__in=['Submitted','Graded']).count()  #该问卷已提交的填写份数
             data_list.append({'Title':survey.Title,'PublishDate':survey.PublishDate,'SurveyID':survey.SurveyID,
                     'Category':survey.Category,'Description':survey.Description,'FilledPeople':submissionCnt, 'IsOpening':survey.Is_open})
         data={'data':data_list}
@@ -1388,36 +1388,6 @@ def download_submissions(request, surveyID):
             print(e)
             return JsonResponse({'message': '导出表格失败!'})
 
-
-
-
-    # 创建Excel writer对象
-        writer = pd.ExcelWriter(output, engine='openpyxl')
-
-    # 将DataFrame写入Excel文件
-        df.to_excel(writer, index=False)
-
-    # 保存Excel文件
-        writer.save()
-
-    # 重置流的位置
-        output.seek(0)
-
-    # 创建HttpResponse对象，将Excel文件作为响应发送
-        response = HttpResponse(
-            output.read(),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename=文件名.xlsx'
-
-        return response
-        '''
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="问卷填写情况.xlsx"'
-        df.to_excel(response, index=False)
-
-        return response
-        '''
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 from django.db.models import Count, Sum, Q
